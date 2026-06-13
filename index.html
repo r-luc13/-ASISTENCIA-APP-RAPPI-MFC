@@ -21,211 +21,132 @@
     --rojo:   #DC2626;
   }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body {
-    font-family:'Inter',system-ui,sans-serif;
-    background:var(--bg);
-    color:var(--dark);
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-  }
+  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--dark); min-height:100vh; display:flex; flex-direction:column; }
 
-  /* ── HEADER ── */
-  .header-brand {
-    background:var(--naranja);
-    padding:14px 20px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
+  /* HEADER */
+  .header-brand { background:var(--naranja); padding:14px 20px; display:flex; align-items:center; gap:10px; }
   .logo-text { font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
-  .logo-badge {
-    background:#fff;
-    color:var(--naranja);
-    border-radius:5px;
-    padding:2px 7px;
-    font-size:10px;
-    font-weight:700;
-    letter-spacing:0.08em;
-    text-transform:uppercase;
-  }
-  .header-clock {
+  .logo-badge { background:#fff; color:var(--naranja); border-radius:5px; padding:2px 7px; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
+  .header-clock { background:var(--dark); padding:14px 20px 16px; text-align:center; }
+  #reloj { font-size:48px; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:-2px; line-height:1; }
+  #fecha { font-size:13px; color:rgba(255,255,255,0.5); margin-top:3px; text-transform:capitalize; }
+
+  /* CRONÓMETRO */
+  .crono-wrap {
     background:var(--dark);
-    padding:16px 20px 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 20px 16px;
     text-align:center;
   }
-  #reloj {
-    font-size:52px;
-    font-weight:800;
-    color:#fff;
-    font-variant-numeric:tabular-nums;
-    letter-spacing:-2px;
-    line-height:1;
+  .crono-label { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:4px; }
+  #cronometro {
+    font-size:32px; font-weight:800; color:#fff;
+    font-variant-numeric:tabular-nums; letter-spacing:-1px;
+    transition: color 0.3s;
   }
-  #fecha { font-size:13px; color:rgba(255,255,255,0.5); margin-top:4px; text-transform:capitalize; }
+  #cronometro.pausado { color: var(--ambar); }
+  #cronometro.detenido { color: var(--gris); }
+  .crono-info { font-size:12px; color:rgba(255,255,255,0.45); margin-top:4px; min-height:16px; }
 
-  /* ── PANTALLAS ── */
+  /* PANTALLAS */
   .pantalla { display:none; flex:1; flex-direction:column; }
   .pantalla.activa { display:flex; }
-  .contenido { padding:24px 20px; max-width:440px; width:100%; margin:0 auto; flex:1; }
+  .contenido { padding:20px; max-width:440px; width:100%; margin:0 auto; flex:1; }
 
-  /* ── CAMPO ── */
-  .campo { margin-bottom:18px; }
-  .campo label {
-    display:block; font-size:11px; font-weight:700;
-    letter-spacing:0.1em; text-transform:uppercase;
-    color:var(--gris); margin-bottom:7px;
-  }
-  .campo input {
-    width:100%; padding:14px 16px;
-    font-size:16px; font-family:'Inter',sans-serif; font-weight:500;
-    border:2px solid var(--line); border-radius:12px;
-    background:var(--card); color:var(--dark);
-    transition:border-color 0.15s;
-  }
+  /* CAMPOS */
+  .campo { margin-bottom:16px; }
+  .campo label { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gris); margin-bottom:7px; }
+  .campo input { width:100%; padding:14px 16px; font-size:16px; font-family:'Inter',sans-serif; font-weight:500; border:2px solid var(--line); border-radius:12px; background:var(--card); color:var(--dark); transition:border-color 0.15s; }
   .campo input:focus { outline:none; border-color:var(--naranja); }
   .campo input::placeholder { color:#BBBABA; font-weight:400; }
-
-  /* PIN field */
   .pin-wrap { position:relative; }
   .pin-wrap input { letter-spacing:0.3em; font-size:22px; font-weight:700; padding-right:48px; }
-  .pin-toggle {
-    position:absolute; right:14px; top:50%; transform:translateY(-50%);
-    background:none; border:none; cursor:pointer;
-    font-size:18px; color:var(--gris); padding:4px;
-  }
+  .pin-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:18px; color:var(--gris); padding:4px; }
 
-  /* ── BOTONES ── */
-  .btn {
-    width:100%; padding:15px;
-    border:none; border-radius:12px;
-    font-family:'Inter',sans-serif; font-weight:700; font-size:16px;
-    cursor:pointer; transition:transform 0.08s, filter 0.08s;
-    margin-bottom:12px;
-  }
+  /* BOTONES */
+  .btn { width:100%; padding:15px; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-weight:700; font-size:16px; cursor:pointer; transition:transform 0.08s, filter 0.08s; margin-bottom:12px; }
   .btn:active { transform:scale(0.97); filter:brightness(0.93); }
   .btn-primario { background:var(--naranja); color:#fff; }
-  .btn-secundario {
-    background:transparent; color:var(--naranja);
-    border:2px solid var(--naranja-border);
-  }
+  .btn-secundario { background:transparent; color:var(--naranja); border:2px solid var(--naranja-border); }
   .btn:disabled { opacity:0.5; pointer-events:none; }
-
-  /* ── SEPARADOR ── */
-  .sep { display:flex; align-items:center; gap:12px; margin:18px 0; }
+  .sep { display:flex; align-items:center; gap:12px; margin:16px 0; }
   .sep span { font-size:13px; color:var(--gris); white-space:nowrap; }
   .sep::before, .sep::after { content:''; flex:1; height:1px; background:var(--line); }
 
-  /* ── BADGE USUARIO ── */
-  .badge-usuario {
-    background:var(--naranja-light);
-    border:1.5px solid var(--naranja-border);
-    border-radius:14px;
-    padding:12px 16px;
-    display:flex;
-    align-items:center;
-    gap:12px;
-    margin-bottom:20px;
-  }
-  .avatar {
-    width:42px; height:42px; border-radius:50%;
-    background:var(--naranja); color:#fff;
-    font-weight:800; font-size:16px;
-    display:flex; align-items:center; justify-content:center;
-    flex-shrink:0;
-  }
+  /* BADGE USUARIO */
+  .badge-usuario { background:var(--naranja-light); border:1.5px solid var(--naranja-border); border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .avatar { width:42px; height:42px; border-radius:50%; background:var(--naranja); color:#fff; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .badge-usuario .info { flex:1; min-width:0; }
-  .badge-usuario .info .nombre-user {
-    font-weight:700; font-size:15px; color:var(--dark);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
+  .badge-usuario .info .nombre-user { font-weight:700; font-size:15px; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .badge-usuario .info .id-user { font-size:12px; color:var(--gris); margin-top:1px; }
-  .btn-salir {
-    background:none; border:none; cursor:pointer;
-    font-size:12px; font-weight:600; color:var(--gris);
-    padding:4px 8px; border-radius:8px;
-    white-space:nowrap;
-  }
-  .btn-salir:hover { color:var(--rojo); }
+  .btn-salir { background:none; border:none; cursor:pointer; font-size:12px; font-weight:600; color:var(--gris); padding:4px 8px; border-radius:8px; white-space:nowrap; }
 
-  /* ── MARCACIONES ── */
-  .seccion-titulo {
-    font-size:11px; font-weight:700; letter-spacing:0.1em;
-    text-transform:uppercase; color:var(--gris); margin-bottom:12px;
-  }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  /* MARCACIONES */
+  .seccion-titulo { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gris); margin-bottom:10px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+
   .btn-marca {
-    border:none; border-radius:16px; padding:18px 14px 16px;
+    border:none; border-radius:16px; padding:16px 14px 14px;
     color:#fff; font-family:'Inter',sans-serif; font-weight:700;
     font-size:14px; line-height:1.25; cursor:pointer;
-    text-align:left; min-height:100px;
+    text-align:left; min-height:96px;
     display:flex; flex-direction:column; justify-content:space-between;
-    transition:transform 0.08s, filter 0.08s;
+    transition:transform 0.08s, opacity 0.3s;
+    position:relative; overflow:hidden;
   }
-  .btn-marca:active { transform:scale(0.96); filter:brightness(0.9); }
-  .btn-marca .icono { font-size:24px; line-height:1; margin-bottom:8px; }
+  .btn-marca:active { transform:scale(0.96); }
+  .btn-marca .icono { font-size:22px; line-height:1; margin-bottom:6px; }
   .btn-marca .etiqueta { font-size:13px; font-weight:700; line-height:1.2; }
   .btn-marca .sub { font-size:11px; font-weight:500; opacity:0.75; margin-top:2px; }
+
+  /* check badge */
+  .btn-marca .check-badge {
+    position:absolute; top:10px; right:10px;
+    width:22px; height:22px; border-radius:50%;
+    background:rgba(255,255,255,0.3);
+    display:none; align-items:center; justify-content:center;
+    font-size:12px;
+  }
+  .btn-marca.hecho .check-badge { display:flex; }
+
+  /* hora marcada */
+  .btn-marca .hora-marcada {
+    position:absolute; bottom:10px; right:10px;
+    font-size:10px; font-weight:700;
+    background:rgba(0,0,0,0.2); border-radius:6px;
+    padding:2px 6px; display:none;
+  }
+  .btn-marca.hecho .hora-marcada { display:block; }
+
   .btn-marca[data-tipo="ingreso_turno"] { background:var(--verde); }
   .btn-marca[data-tipo="inicio_break"]  { background:var(--ambar); }
   .btn-marca[data-tipo="fin_break"]     { background:var(--azul);  }
   .btn-marca[data-tipo="salida_turno"]  { background:var(--rojo);  }
-  .btn-marca.hecho { opacity:0.35; pointer-events:none; }
-  .btn-marca.hecho .etiqueta::after { content:' ✓'; }
+
+  .btn-marca.hecho { opacity:0.45; pointer-events:none; }
 
   .nota-pie { font-size:12px; color:var(--gris); text-align:center; line-height:1.6; }
 
-  /* ── MENSAJE ERROR / INFO ── */
-  .msg {
-    font-size:13px; font-weight:600; padding:10px 14px;
-    border-radius:10px; margin-bottom:14px; display:none;
-  }
+  /* MENSAJE */
+  .msg { font-size:13px; font-weight:600; padding:10px 14px; border-radius:10px; margin-bottom:14px; display:none; }
   .msg.error { background:#FEE2E2; color:#991B1B; display:block; }
   .msg.info  { background:#DCFCE7; color:#166534; display:block; }
 
-  /* ── MODAL CÁMARA ── */
-  #modal {
-    position:fixed; inset:0;
-    background:rgba(10,10,10,0.97);
-    display:none; flex-direction:column;
-    align-items:center; justify-content:center;
-    padding:24px 20px; z-index:50;
-  }
+  /* MODAL */
+  #modal { position:fixed; inset:0; background:rgba(10,10,10,0.97); display:none; flex-direction:column; align-items:center; justify-content:center; padding:24px 20px; z-index:50; }
   #modal.abierto { display:flex; }
-  .modal-chip {
-    font-size:12px; font-weight:700; color:#fff;
-    background:var(--naranja); border-radius:20px;
-    padding:4px 14px; margin-bottom:12px;
-    letter-spacing:0.04em; text-transform:uppercase;
-  }
+  .modal-chip { font-size:12px; font-weight:700; color:#fff; background:var(--naranja); border-radius:20px; padding:4px 14px; margin-bottom:10px; letter-spacing:0.04em; text-transform:uppercase; }
   #modal-titulo { color:#fff; font-size:17px; font-weight:700; margin-bottom:14px; }
-  .marco {
-    width:min(80vw,300px); aspect-ratio:3/4;
-    border-radius:20px; overflow:hidden;
-    background:#111; border:2.5px solid rgba(255,255,255,0.15);
-  }
+  .marco { width:min(80vw,300px); aspect-ratio:3/4; border-radius:20px; overflow:hidden; background:#111; border:2.5px solid rgba(255,255,255,0.15); }
   .marco video, .marco canvas { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-  .modal-acciones { display:flex; gap:10px; margin-top:16px; width:min(80vw,300px); }
-  .modal-acciones button {
-    flex:1; padding:13px 10px; border:none; border-radius:12px;
-    font-family:'Inter',sans-serif; font-weight:700; font-size:14px; cursor:pointer;
-  }
+  .modal-acciones { display:flex; gap:10px; margin-top:14px; width:min(80vw,300px); }
+  .modal-acciones button { flex:1; padding:13px 10px; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-weight:700; font-size:14px; cursor:pointer; }
   .b-p { background:var(--naranja); color:#fff; }
   .b-s { background:transparent; color:rgba(255,255,255,0.7); border:1.5px solid rgba(255,255,255,0.2)!important; }
-  #estado-envio { color:rgba(255,255,255,0.6); margin-top:12px; font-size:14px; min-height:20px; text-align:center; }
+  #estado-envio { color:rgba(255,255,255,0.6); margin-top:10px; font-size:14px; min-height:20px; text-align:center; }
 
-  /* ── TOAST ── */
-  #toast {
-    position:fixed; bottom:28px; left:50%;
-    transform:translateX(-50%) translateY(16px);
-    background:var(--dark); color:#fff;
-    padding:13px 20px; border-radius:14px;
-    font-size:14px; font-weight:600;
-    max-width:88vw; text-align:center;
-    opacity:0; pointer-events:none;
-    transition:opacity 0.22s, transform 0.22s;
-    z-index:60;
-  }
+  /* TOAST */
+  #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--dark); color:#fff; padding:13px 20px; border-radius:14px; font-size:14px; font-weight:600; max-width:88vw; text-align:center; opacity:0; pointer-events:none; transition:opacity 0.22s, transform 0.22s; z-index:60; box-shadow:0 4px 20px rgba(0,0,0,0.25); }
   #toast.visible { opacity:1; transform:translateX(-50%) translateY(0); }
   #toast.error { background:var(--rojo); }
   #toast.exito { background:var(--verde); }
@@ -235,7 +156,6 @@
 </head>
 <body>
 
-<!-- ══ HEADER ══ -->
 <div class="header-brand">
   <div class="logo-text">rappi</div>
   <div class="logo-badge">MFC</div>
@@ -244,20 +164,19 @@
   <div id="reloj">--:--:--</div>
   <div id="fecha"></div>
 </div>
+<div class="crono-wrap" id="crono-wrap" style="display:none">
+  <div class="crono-label">Tiempo de turno activo</div>
+  <div id="cronometro" class="detenido">00:00:00</div>
+  <div class="crono-info" id="crono-info"></div>
+</div>
 
-<!-- ══ PANTALLA: LOGIN ══ -->
+<!-- LOGIN -->
 <div class="pantalla activa" id="p-login">
   <div class="contenido">
-    <div class="campo">
-      <label>Correo Gmail</label>
-      <input id="login-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email">
-    </div>
+    <div class="campo"><label>Correo Gmail</label><input id="login-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email"></div>
     <div class="campo">
       <label>PIN (4 dígitos)</label>
-      <div class="pin-wrap">
-        <input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password">
-        <button class="pin-toggle" onclick="togglePin('login-pin',this)" type="button">👁</button>
-      </div>
+      <div class="pin-wrap"><input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"><button class="pin-toggle" onclick="togglePin('login-pin',this)" type="button">👁</button></div>
     </div>
     <div id="login-msg" class="msg"></div>
     <button class="btn btn-primario" id="btn-login">Ingresar</button>
@@ -266,31 +185,13 @@
   </div>
 </div>
 
-<!-- ══ PANTALLA: REGISTRO ══ -->
+<!-- REGISTRO -->
 <div class="pantalla" id="p-registro">
   <div class="contenido">
-    <div class="campo">
-      <label>Nombre completo</label>
-      <input id="reg-nombre" type="text" placeholder="Ej: María Torres" autocomplete="name">
-    </div>
-    <div class="campo">
-      <label>Correo Gmail</label>
-      <input id="reg-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email">
-    </div>
-    <div class="campo">
-      <label>Elige tu PIN (4 dígitos)</label>
-      <div class="pin-wrap">
-        <input id="reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
-        <button class="pin-toggle" onclick="togglePin('reg-pin',this)" type="button">👁</button>
-      </div>
-    </div>
-    <div class="campo">
-      <label>Confirma tu PIN</label>
-      <div class="pin-wrap">
-        <input id="reg-pin2" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
-        <button class="pin-toggle" onclick="togglePin('reg-pin2',this)" type="button">👁</button>
-      </div>
-    </div>
+    <div class="campo"><label>Nombre completo</label><input id="reg-nombre" type="text" placeholder="Ej: María Torres" autocomplete="name"></div>
+    <div class="campo"><label>Correo Gmail</label><input id="reg-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email"></div>
+    <div class="campo"><label>Elige tu PIN (4 dígitos)</label><div class="pin-wrap"><input id="reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"><button class="pin-toggle" onclick="togglePin('reg-pin',this)" type="button">👁</button></div></div>
+    <div class="campo"><label>Confirma tu PIN</label><div class="pin-wrap"><input id="reg-pin2" type="password" inputmode="numeric" maxlength="4" placeholder="••••"><button class="pin-toggle" onclick="togglePin('reg-pin2',this)" type="button">👁</button></div></div>
     <div id="reg-msg" class="msg"></div>
     <button class="btn btn-primario" id="btn-registro">Crear cuenta</button>
     <div class="sep"><span>¿Ya tienes cuenta?</span></div>
@@ -298,7 +199,7 @@
   </div>
 </div>
 
-<!-- ══ PANTALLA: MARCACIONES ══ -->
+<!-- MARCACIONES -->
 <div class="pantalla" id="p-marcaciones">
   <div class="contenido">
     <div class="badge-usuario">
@@ -313,27 +214,35 @@
     <div class="seccion-titulo">Registrar marcación</div>
     <div class="grid">
       <button class="btn-marca" data-tipo="ingreso_turno">
+        <div class="check-badge">✓</div>
         <div class="icono">▶</div>
         <div><div class="etiqueta">Ingreso de turno</div><div class="sub">Inicio de jornada</div></div>
+        <div class="hora-marcada"></div>
       </button>
       <button class="btn-marca" data-tipo="inicio_break">
+        <div class="check-badge">✓</div>
         <div class="icono">⏸</div>
         <div><div class="etiqueta">Inicio de break</div><div class="sub">Salida a descanso</div></div>
+        <div class="hora-marcada"></div>
       </button>
       <button class="btn-marca" data-tipo="fin_break">
+        <div class="check-badge">✓</div>
         <div class="icono">↩</div>
         <div><div class="etiqueta">Fin de break</div><div class="sub">Regreso al turno</div></div>
+        <div class="hora-marcada"></div>
       </button>
       <button class="btn-marca" data-tipo="salida_turno">
+        <div class="check-badge">✓</div>
         <div class="icono">■</div>
         <div><div class="etiqueta">Salida de turno</div><div class="sub">Fin de jornada</div></div>
+        <div class="hora-marcada"></div>
       </button>
     </div>
     <p class="nota-pie">Cada marcación registra selfie y ubicación GPS.<br>Permite el acceso cuando el dispositivo lo solicite.</p>
   </div>
 </div>
 
-<!-- ══ MODAL CÁMARA ══ -->
+<!-- MODAL CÁMARA -->
 <div id="modal">
   <div class="modal-chip">Rappi MFC</div>
   <div id="modal-titulo">Selfie de marcación</div>
@@ -353,24 +262,136 @@
 <div id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════════════
-   CONFIGURACIÓN — pega tu URL de Apps Script
-══════════════════════════════════════════════ */
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHBcNgnrr0ihTByaWew6DY8KM3l16b4Z9CrWyXNJwwM5RSa4IxctbnUbZI8xoxhkNEpg/exec';
+const SCRIPT_URL = 'PEGA_AQUI_LA_URL_DE_TU_APPS_SCRIPT';
 
-const ETIQUETAS = {
-  ingreso_turno: 'Ingreso de turno',
-  inicio_break:  'Inicio de break',
-  fin_break:     'Fin de break',
-  salida_turno:  'Salida de turno'
-};
+const ETIQUETAS = { ingreso_turno:'Ingreso de turno', inicio_break:'Inicio de break', fin_break:'Fin de break', salida_turno:'Salida de turno' };
 
-let sesion = null;   // { id, nombre }
+let sesion = null;
 let tipoActual = null;
 let stream = null;
 let fotoBase64 = null;
 
-/* ─── Reloj ─── */
+// ── CRONÓMETRO ──
+let cronoSegundos  = 0;   // segundos de turno activo acumulados
+let cronoInterval  = null;
+let cronoEstado    = 'inactivo'; // inactivo | corriendo | pausado | detenido
+let horasMarcadas  = {};  // { ingreso_turno:'08:01', ... }
+
+function cronoTick() {
+  cronoSegundos++;
+  renderCrono();
+}
+
+function renderCrono() {
+  const h = String(Math.floor(cronoSegundos/3600)).padStart(2,'0');
+  const m = String(Math.floor((cronoSegundos%3600)/60)).padStart(2,'0');
+  const s = String(cronoSegundos%60).padStart(2,'0');
+  const el = document.getElementById('cronometro');
+  el.textContent = h+':'+m+':'+s;
+  el.className = cronoEstado === 'pausado' ? 'pausado' : cronoEstado === 'detenido' ? 'detenido' : '';
+}
+
+function actualizarCronoInfo() {
+  const info = document.getElementById('crono-info');
+  if (cronoEstado === 'pausado' && horasMarcadas.inicio_break) {
+    info.textContent = 'En break desde las ' + horasMarcadas.inicio_break;
+  } else if (cronoEstado === 'detenido' && horasMarcadas.salida_turno) {
+    info.textContent = 'Turno finalizado a las ' + horasMarcadas.salida_turno;
+  } else if (cronoEstado === 'corriendo' && horasMarcadas.ingreso_turno) {
+    info.textContent = 'Turno iniciado a las ' + horasMarcadas.ingreso_turno;
+  } else {
+    info.textContent = '';
+  }
+}
+
+function aplicarEstadoCrono(marcaciones) {
+  // Reconstruir segundos y estado según marcaciones del servidor
+  const ini = marcaciones.ingreso_turno || '';
+  const ib  = marcaciones.inicio_break  || '';
+  const fb  = marcaciones.fin_break     || '';
+  const sal = marcaciones.salida_turno  || '';
+
+  clearInterval(cronoInterval);
+
+  if (!ini) { cronoEstado = 'inactivo'; document.getElementById('crono-wrap').style.display='none'; return; }
+
+  document.getElementById('crono-wrap').style.display = 'block';
+
+  function toSeg(hms) {
+    if(!hms) return 0;
+    const p = hms.split(':');
+    return parseInt(p[0]||0)*3600 + parseInt(p[1]||0)*60 + parseInt(p[2]||0);
+  }
+  function ahoraEnSeg() {
+    const d = new Date();
+    return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
+  }
+
+  const segIni = toSeg(ini);
+  const segIb  = toSeg(ib);
+  const segFb  = toSeg(fb);
+  const segSal = toSeg(sal);
+  const segAhora = ahoraEnSeg();
+
+  if (sal) {
+    // Turno terminado
+    let activo = (segSal - segIni);
+    if (ib && fb) activo -= (segFb - segIb);
+    else if (ib && !fb) activo -= (segSal - segIb);
+    cronoSegundos = Math.max(0, activo);
+    cronoEstado   = 'detenido';
+  } else if (ib && !fb) {
+    // En break
+    cronoSegundos = Math.max(0, segIb - segIni);
+    cronoEstado   = 'pausado';
+  } else if (fb) {
+    // Regresó del break
+    const tiempoAntesBrk = segIb - segIni;
+    const tiempoDesFb    = segAhora - segFb;
+    cronoSegundos = Math.max(0, tiempoAntesBrk + tiempoDesFb);
+    cronoEstado   = 'corriendo';
+    cronoInterval = setInterval(cronoTick, 1000);
+  } else {
+    // Solo ingresó, corriendo
+    cronoSegundos = Math.max(0, segAhora - segIni);
+    cronoEstado   = 'corriendo';
+    cronoInterval = setInterval(cronoTick, 1000);
+  }
+
+  renderCrono();
+  actualizarCronoInfo();
+}
+
+function avanzarCronoPorMarcacion(tipo, hora) {
+  horasMarcadas[tipo] = hora;
+
+  function toSeg(hms) {
+    if(!hms) return 0;
+    const p = hms.split(':');
+    return parseInt(p[0]||0)*3600 + parseInt(p[1]||0)*60 + parseInt(p[2]||0);
+  }
+
+  clearInterval(cronoInterval);
+  document.getElementById('crono-wrap').style.display = 'block';
+
+  if (tipo === 'ingreso_turno') {
+    cronoSegundos = 0;
+    cronoEstado   = 'corriendo';
+    cronoInterval = setInterval(cronoTick, 1000);
+  } else if (tipo === 'inicio_break') {
+    cronoEstado = 'pausado';
+  } else if (tipo === 'fin_break') {
+    cronoEstado   = 'corriendo';
+    cronoInterval = setInterval(cronoTick, 1000);
+  } else if (tipo === 'salida_turno') {
+    cronoEstado = 'detenido';
+  }
+
+  renderCrono();
+  actualizarCronoInfo();
+}
+
+// ── RELOJ ──
 function tick() {
   const d = new Date();
   document.getElementById('reloj').textContent = d.toLocaleTimeString('es-PE',{hour12:false});
@@ -378,141 +399,126 @@ function tick() {
 }
 setInterval(tick,1000); tick();
 
-/* ─── Navegación entre pantallas ─── */
+// ── PANTALLAS ──
 function mostrarPantalla(id) {
-  document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('activa'));
   document.getElementById(id).classList.add('activa');
   limpiarMensajes();
 }
+function limpiarMensajes() { document.querySelectorAll('.msg').forEach(m=>{m.className='msg';m.textContent='';}); }
+function mostrarMsg(id,txt,tipo) { const el=document.getElementById(id); el.textContent=txt; el.className='msg '+tipo; }
 
-function limpiarMensajes() {
-  document.querySelectorAll('.msg').forEach(m => { m.className='msg'; m.textContent=''; });
-}
-
-function mostrarMsg(idMsg, texto, tipo) {
-  const el = document.getElementById(idMsg);
-  el.textContent = texto;
-  el.className = 'msg ' + tipo;
-}
-
-/* ─── Restaurar sesión guardada ─── */
+// ── SESIÓN GUARDADA ──
 try {
-  const s = JSON.parse(localStorage.getItem('rappi_sesion') || 'null');
-  if (s && s.id && s.nombre) {
-    sesion = s;
-    aplicarSesion();
-    mostrarPantalla('p-marcaciones');
-  }
-} catch(e) {}
+  const s = JSON.parse(localStorage.getItem('rappi_sesion')||'null');
+  if (s && s.id && s.nombre) { sesion=s; aplicarSesion(); cargarEstadoHoy(); mostrarPantalla('p-marcaciones'); }
+} catch(e){}
 
-/* ─── LOGIN ─── */
+// ── LOGIN ──
 document.getElementById('btn-login').addEventListener('click', async () => {
   const gmail = document.getElementById('login-gmail').value.trim().toLowerCase();
   const pin   = document.getElementById('login-pin').value.trim();
-  if (!gmail || !pin) { mostrarMsg('login-msg','Completa todos los campos.','error'); return; }
-
+  if (!gmail||!pin) { mostrarMsg('login-msg','Completa todos los campos.','error'); return; }
   const btn = document.getElementById('btn-login');
-  btn.disabled = true; btn.textContent = 'Verificando…';
-  limpiarMensajes();
-
+  btn.disabled=true; btn.textContent='Verificando…'; limpiarMensajes();
   try {
-    const res = await api({ accion:'login', gmail, pin });
+    const res = await api({accion:'login',gmail,pin});
     if (res.ok) {
-      sesion = { id: res.id, nombre: res.nombre };
-      localStorage.setItem('rappi_sesion', JSON.stringify(sesion));
+      sesion={id:res.id,nombre:res.nombre};
+      localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
       aplicarSesion();
-      restaurarMarcacionesHoy();
+      await cargarEstadoHoy();
       mostrarPantalla('p-marcaciones');
-    } else {
-      mostrarMsg('login-msg', res.error, 'error');
-    }
-  } catch(e) {
-    mostrarMsg('login-msg','Error de conexión. Revisa tu internet.','error');
-  } finally {
-    btn.disabled=false; btn.textContent='Ingresar';
-  }
+    } else { mostrarMsg('login-msg',res.error,'error'); }
+  } catch(e) { mostrarMsg('login-msg','Error de conexión.','error'); }
+  finally { btn.disabled=false; btn.textContent='Ingresar'; }
 });
 
-/* ─── REGISTRO ─── */
+// ── REGISTRO ──
 document.getElementById('btn-registro').addEventListener('click', async () => {
-  const nombre = document.getElementById('reg-nombre').value.trim();
-  const gmail  = document.getElementById('reg-gmail').value.trim().toLowerCase();
-  const pin    = document.getElementById('reg-pin').value.trim();
-  const pin2   = document.getElementById('reg-pin2').value.trim();
-
-  if (!nombre||!gmail||!pin||!pin2){ mostrarMsg('reg-msg','Completa todos los campos.','error'); return; }
-  if (!/^\d{4}$/.test(pin)){ mostrarMsg('reg-msg','El PIN debe ser exactamente 4 dígitos.','error'); return; }
-  if (pin !== pin2){ mostrarMsg('reg-msg','Los PINs no coinciden.','error'); return; }
-  if (!/@gmail\.com$/.test(gmail)){ mostrarMsg('reg-msg','Ingresa un correo Gmail válido.','error'); return; }
-
-  const btn = document.getElementById('btn-registro');
-  btn.disabled=true; btn.textContent='Creando cuenta…';
-  limpiarMensajes();
-
+  const nombre=document.getElementById('reg-nombre').value.trim();
+  const gmail=document.getElementById('reg-gmail').value.trim().toLowerCase();
+  const pin=document.getElementById('reg-pin').value.trim();
+  const pin2=document.getElementById('reg-pin2').value.trim();
+  if (!nombre||!gmail||!pin||!pin2){mostrarMsg('reg-msg','Completa todos los campos.','error');return;}
+  if (!/^\d{4}$/.test(pin)){mostrarMsg('reg-msg','El PIN debe ser de 4 dígitos.','error');return;}
+  if (pin!==pin2){mostrarMsg('reg-msg','Los PINs no coinciden.','error');return;}
+  if (!/@gmail\.com$/.test(gmail)){mostrarMsg('reg-msg','Ingresa un Gmail válido.','error');return;}
+  const btn=document.getElementById('btn-registro');
+  btn.disabled=true; btn.textContent='Creando cuenta…'; limpiarMensajes();
   try {
-    const res = await api({ accion:'registrar', nombre, gmail, pin });
+    const res=await api({accion:'registrar',nombre,gmail,pin});
     if (res.ok) {
-      sesion = { id: res.id, nombre: res.nombre };
-      localStorage.setItem('rappi_sesion', JSON.stringify(sesion));
+      sesion={id:res.id,nombre:res.nombre};
+      localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
       aplicarSesion();
       mostrarPantalla('p-marcaciones');
-      mostrarToast('¡Bienvenido! Tu ID es ' + res.id, 'exito');
-    } else {
-      mostrarMsg('reg-msg', res.error, 'error');
-    }
-  } catch(e) {
-    mostrarMsg('reg-msg','Error de conexión. Revisa tu internet.','error');
-  } finally {
-    btn.disabled=false; btn.textContent='Crear cuenta';
-  }
+      mostrarToast('¡Bienvenido! Tu ID es '+res.id,'exito');
+    } else { mostrarMsg('reg-msg',res.error,'error'); }
+  } catch(e) { mostrarMsg('reg-msg','Error de conexión.','error'); }
+  finally { btn.disabled=false; btn.textContent='Crear cuenta'; }
 });
 
-/* ─── Aplicar sesión a la UI ─── */
+// ── APLICAR SESIÓN ──
 function aplicarSesion() {
   if (!sesion) return;
-  document.getElementById('user-nombre').textContent = sesion.nombre;
-  document.getElementById('user-id').textContent = sesion.id;
-  const iniciales = sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
-  document.getElementById('avatar-iniciales').textContent = iniciales;
+  document.getElementById('user-nombre').textContent=sesion.nombre;
+  document.getElementById('user-id').textContent=sesion.id;
+  const ini=sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
+  document.getElementById('avatar-iniciales').textContent=ini;
 }
 
-/* ─── Cerrar sesión ─── */
+// ── CARGAR ESTADO DE HOY DESDE EL SERVIDOR ──
+async function cargarEstadoHoy() {
+  if (!sesion) return;
+  const hoy = fechaHoy();
+  try {
+    const res = await api({accion:'estado_hoy', id:sesion.id, fecha:hoy});
+    if (res.ok && res.marcaciones) {
+      horasMarcadas = {};
+      Object.keys(res.marcaciones).forEach(tipo => {
+        const hora = res.marcaciones[tipo];
+        if (hora && hora !== 'undefined' && hora.trim() !== '') {
+          horasMarcadas[tipo] = hora;
+          marcarHechoUI(tipo, hora);
+        }
+      });
+      aplicarEstadoCrono(res.marcaciones);
+    }
+  } catch(e) {}
+}
+
+// ── CERRAR SESIÓN ──
 function cerrarSesion() {
-  sesion = null;
-  try { localStorage.removeItem('rappi_sesion'); } catch(e){}
-  document.querySelectorAll('.btn-marca').forEach(b=>b.classList.remove('hecho'));
+  sesion=null;
+  clearInterval(cronoInterval);
+  cronoSegundos=0; cronoEstado='inactivo'; horasMarcadas={};
+  document.getElementById('crono-wrap').style.display='none';
+  document.getElementById('cronometro').textContent='00:00:00';
+  try{localStorage.removeItem('rappi_sesion');}catch(e){}
+  document.querySelectorAll('.btn-marca').forEach(b=>{b.classList.remove('hecho'); b.querySelector('.hora-marcada').textContent='';});
   mostrarPantalla('p-login');
 }
 
-/* ─── Toggle PIN visible ─── */
-function togglePin(id, btn) {
-  const input = document.getElementById(id);
-  input.type = input.type === 'password' ? 'text' : 'password';
-  btn.textContent = input.type === 'password' ? '👁' : '🙈';
-}
+function togglePin(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
 
-/* ─── MARCACIONES ─── */
-document.querySelectorAll('.btn-marca').forEach(btn => {
-  btn.addEventListener('click', async () => {
+// ── MARCACIONES ──
+document.querySelectorAll('.btn-marca').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
     if (!sesion) return;
-    if (SCRIPT_URL.indexOf('http') !== 0) {
-      mostrarToast('App no conectada. Contacta al administrador.','error'); return;
-    }
-    tipoActual = btn.dataset.tipo;
-    document.getElementById('modal-titulo').textContent = ETIQUETAS[tipoActual];
+    if (SCRIPT_URL.indexOf('http')!==0){mostrarToast('App no conectada.','error');return;}
+    tipoActual=btn.dataset.tipo;
+    document.getElementById('modal-titulo').textContent=ETIQUETAS[tipoActual];
     abrirModal();
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:'user',width:{ideal:720}}, audio:false });
-      document.getElementById('video').srcObject = stream;
-    } catch(e) {
-      cerrarModal();
-      mostrarToast('No se pudo abrir la cámara. Revisa los permisos.','error');
-    }
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}},audio:false});
+      document.getElementById('video').srcObject=stream;
+    } catch(e){cerrarModal();mostrarToast('No se pudo abrir la cámara.','error');}
   });
 });
 
-function abrirModal() {
-  fotoBase64 = null;
+function abrirModal(){
+  fotoBase64=null;
   document.getElementById('video').style.display='block';
   document.getElementById('canvas').style.display='none';
   document.getElementById('btn-capturar').style.display='inline-block';
@@ -522,27 +528,25 @@ function abrirModal() {
   document.getElementById('estado-envio').textContent='';
   document.getElementById('modal').classList.add('abierto');
 }
-
-function cerrarModal() {
-  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+function cerrarModal(){
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
   document.getElementById('modal').classList.remove('abierto');
 }
+document.getElementById('btn-cancelar').addEventListener('click',cerrarModal);
 
-document.getElementById('btn-cancelar').addEventListener('click', cerrarModal);
-
-document.getElementById('btn-capturar').addEventListener('click', () => {
-  const video=document.getElementById('video'), canvas=document.getElementById('canvas');
-  const escala=Math.min(1,640/video.videoWidth);
-  canvas.width=video.videoWidth*escala; canvas.height=video.videoHeight*escala;
-  canvas.getContext('2d').drawImage(video,0,0,canvas.width,canvas.height);
-  fotoBase64=canvas.toDataURL('image/jpeg',0.72).split(',')[1];
-  video.style.display='none'; canvas.style.display='block';
+document.getElementById('btn-capturar').addEventListener('click',()=>{
+  const v=document.getElementById('video'),c=document.getElementById('canvas');
+  const e=Math.min(1,640/v.videoWidth);
+  c.width=v.videoWidth*e; c.height=v.videoHeight*e;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  fotoBase64=c.toDataURL('image/jpeg',0.72).split(',')[1];
+  v.style.display='none'; c.style.display='block';
   document.getElementById('btn-capturar').style.display='none';
   document.getElementById('btn-confirmar').style.display='inline-block';
   document.getElementById('btn-repetir').style.display='inline-block';
 });
 
-document.getElementById('btn-repetir').addEventListener('click', () => {
+document.getElementById('btn-repetir').addEventListener('click',()=>{
   fotoBase64=null;
   document.getElementById('video').style.display='block';
   document.getElementById('canvas').style.display='none';
@@ -551,7 +555,7 @@ document.getElementById('btn-repetir').addEventListener('click', () => {
   document.getElementById('btn-repetir').style.display='none';
 });
 
-document.getElementById('btn-confirmar').addEventListener('click', async () => {
+document.getElementById('btn-confirmar').addEventListener('click', async ()=>{
   const estado=document.getElementById('estado-envio');
   const btnC=document.getElementById('btn-confirmar');
   const btnR=document.getElementById('btn-repetir');
@@ -559,13 +563,11 @@ document.getElementById('btn-confirmar').addEventListener('click', async () => {
   document.getElementById('btn-cancelar').style.display='none';
   estado.textContent='Obteniendo ubicación…';
 
-  let lat='', lng='';
+  let lat='',lng='';
   try {
-    const pos = await new Promise((res,rej)=>
-      navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000})
-    );
+    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000}));
     lat=pos.coords.latitude.toFixed(6); lng=pos.coords.longitude.toFixed(6);
-  } catch(e) {
+  } catch(e){
     estado.textContent='';
     mostrarToast('No se pudo obtener ubicación. Activa el GPS.','error');
     btnC.disabled=false; btnR.style.display='inline-block';
@@ -575,64 +577,40 @@ document.getElementById('btn-confirmar').addEventListener('click', async () => {
 
   estado.textContent='Registrando marcación…';
   const ahora=new Date();
-  const fecha=ahora.getFullYear()+'-'+String(ahora.getMonth()+1).padStart(2,'0')+'-'+String(ahora.getDate()).padStart(2,'0');
+  const fecha=fechaHoy();
   const hora=ahora.toLocaleTimeString('es-PE',{hour12:false});
 
   try {
-    const res = await api({
-      accion:'marcar',
-      id:sesion.id, nombre:sesion.nombre,
-      tipo:tipoActual, fecha, hora, lat, lng, foto:fotoBase64
-    });
+    const res=await api({accion:'marcar',id:sesion.id,nombre:sesion.nombre,tipo:tipoActual,fecha,hora,lat,lng,foto:fotoBase64});
     cerrarModal();
     if(res.ok){
       mostrarToast('✓ '+res.mensaje,'exito');
-      marcarHecho(tipoActual);
-    } else {
-      mostrarToast(res.error||'No se pudo registrar.','error');
-    }
-  } catch(e) {
-    cerrarModal();
-    mostrarToast('Error de conexión. Revisa tu internet.','error');
-  } finally { btnC.disabled=false; }
+      horasMarcadas[tipoActual]=hora;
+      marcarHechoUI(tipoActual,hora);
+      avanzarCronoPorMarcacion(tipoActual,hora);
+    } else { mostrarToast(res.error||'No se pudo registrar.','error'); }
+  } catch(e){ cerrarModal(); mostrarToast('Error de conexión.','error'); }
+  finally { btnC.disabled=false; }
 });
 
-function marcarHecho(tipo) {
+function marcarHechoUI(tipo,hora){
   const btn=document.querySelector('.btn-marca[data-tipo="'+tipo+'"]');
-  if(btn) btn.classList.add('hecho');
-  try {
-    const hoy=new Date().toDateString();
-    const reg=JSON.parse(localStorage.getItem('rappi_hoy_'+(sesion?sesion.id:''))||'{}');
-    if(reg.dia!==hoy){reg.dia=hoy;reg.tipos=[];}
-    reg.tipos.push(tipo);
-    localStorage.setItem('rappi_hoy_'+(sesion?sesion.id:''), JSON.stringify(reg));
-  } catch(e){}
+  if(!btn) return;
+  btn.classList.add('hecho');
+  const hm=btn.querySelector('.hora-marcada');
+  if(hm && hora) hm.textContent=hora.substring(0,5);
 }
 
-function restaurarMarcacionesHoy() {
-  if(!sesion) return;
-  try {
-    const reg=JSON.parse(localStorage.getItem('rappi_hoy_'+sesion.id)||'{}');
-    if(reg.dia===new Date().toDateString()&&Array.isArray(reg.tipos)){
-      reg.tipos.forEach(t=>{
-        const b=document.querySelector('.btn-marca[data-tipo="'+t+'"]');
-        if(b) b.classList.add('hecho');
-      });
-    }
-  } catch(e){}
+function fechaHoy(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-/* ─── API helper ─── */
-async function api(payload) {
-  const resp = await fetch(SCRIPT_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify(payload)
-  });
-  return resp.json();
+async function api(payload){
+  const r=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
+  return r.json();
 }
 
-/* ─── Toast ─── */
 let toastTimer=null;
 function mostrarToast(msg,tipo){
   const t=document.getElementById('toast');
