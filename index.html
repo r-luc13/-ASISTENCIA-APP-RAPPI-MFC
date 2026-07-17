@@ -6,164 +6,131 @@
 <title>Rappi MFC — Asistencia</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --naranja: #FF441B;
-    --naranja-light: #FFF0ED;
-    --naranja-border: #FFCFC5;
-    --dark: #1A1A1A;
-    --bg: #F5F5F5;
-    --card: #FFFFFF;
-    --line: #E5E5E5;
-    --gris: #767676;
-    --verde:  #00A859;
-    --ambar:  #F59E0B;
-    --azul:   #2563EB;
-    --rojo:   #DC2626;
+  :root{--naranja:#FF441B;--naranja-light:#FFF0ED;--naranja-border:#FFCFC5;--dark:#1A1A1A;--bg:#F5F5F5;--card:#FFFFFF;--line:#E5E5E5;--gris:#767676;--verde:#00A859;--ambar:#F59E0B;--azul:#2563EB;--rojo:#DC2626;}
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;display:flex;flex-direction:column;}
+  .header-brand{background:var(--naranja);padding:14px 18px;display:flex;align-items:center;gap:12px;}
+  .logo-mark{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .logo-block{line-height:1.1;}
+  .logo-text{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.3px;}
+  .logo-tag{font-size:11px;font-weight:600;color:rgba(255,255,255,0.75);letter-spacing:0.04em;margin-top:1px;}
+  .header-clock{background:var(--dark);padding:14px 20px 16px;text-align:center;}
+  #reloj{font-size:44px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-2px;line-height:1;}
+  #fecha{font-size:13px;color:rgba(255,255,255,0.5);margin-top:3px;text-transform:capitalize;}
+  .crono-wrap{background:var(--dark);border-top:1px solid rgba(255,255,255,0.08);padding:10px 20px 16px;text-align:center;}
+  .crono-label{font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:4px;}
+  #cronometro{font-size:34px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;letter-spacing:-1px;transition:color 0.3s;}
+  #cronometro.pausado{color:var(--ambar);}
+  #cronometro.detenido{color:var(--gris);}
+  .crono-info{font-size:12px;color:rgba(255,255,255,0.45);margin-top:4px;min-height:16px;}
+  .pantalla{display:none;flex:1;flex-direction:column;}
+  .pantalla.activa{display:flex;}
+  .contenido{padding:20px;max-width:440px;width:100%;margin:0 auto;flex:1;}
+  .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);}
+  .tab{flex:1;padding:13px;text-align:center;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent;}
+  .tab.activo{color:var(--naranja);border-bottom-color:var(--naranja);}
+  .campo{margin-bottom:16px;}
+  .campo label{display:block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);margin-bottom:7px;}
+  .campo input{width:100%;padding:14px 16px;font-size:16px;font-family:'Inter',sans-serif;font-weight:500;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--dark);}
+  .campo input:focus{outline:none;border-color:var(--naranja);}
+  .campo input::placeholder{color:#BBBABA;font-weight:400;}
+  .pin-wrap{position:relative;}
+  .pin-wrap input{padding-right:48px;}
+  .pin-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:var(--gris);padding:4px;}
+  .btn{width:100%;padding:15px;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;cursor:pointer;transition:transform 0.08s,filter 0.08s;margin-bottom:12px;}
+  .btn:active{transform:scale(0.97);filter:brightness(0.93);}
+  .btn-primario{background:var(--naranja);color:#fff;}
+  .btn-secundario{background:transparent;color:var(--naranja);border:2px solid var(--naranja-border);}
+  .btn:disabled{opacity:0.5;pointer-events:none;}
+  .sep{display:flex;align-items:center;gap:12px;margin:16px 0;}
+  .sep span{font-size:13px;color:var(--gris);white-space:nowrap;}
+  .sep::before,.sep::after{content:'';flex:1;height:1px;background:var(--line);}
+  .badge-usuario{background:var(--naranja-light);border:1.5px solid var(--naranja-border);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+  .avatar{width:42px;height:42px;border-radius:50%;background:var(--naranja);color:#fff;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+  .avatar img{width:100%;height:100%;object-fit:cover;}
+  .badge-usuario .info{flex:1;min-width:0;}
+  .badge-usuario .info .nombre-user{font-weight:700;font-size:15px;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .badge-usuario .info .id-user{font-size:12px;color:var(--gris);margin-top:1px;}
+  .btn-salir{background:none;border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--gris);padding:4px 8px;border-radius:8px;white-space:nowrap;}
+
+  /* PASO ACTUAL - botón grande dinámico */
+  .paso-actual{text-align:center;margin-bottom:8px;}
+  .paso-label{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gris);margin-bottom:16px;}
+  .btn-accion{
+    width:100%;padding:28px 20px;border:none;border-radius:20px;color:#fff;
+    font-family:'Inter',sans-serif;font-weight:800;font-size:22px;cursor:pointer;
+    transition:transform 0.08s,filter 0.08s;margin-bottom:16px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
   }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--dark); min-height:100vh; display:flex; flex-direction:column; }
+  .btn-accion:active{transform:scale(0.97);filter:brightness(0.92);}
+  .btn-accion .ico{font-size:32px;}
+  .btn-accion .sub{font-size:13px;font-weight:500;opacity:0.85;}
+  .btn-accion.entrada{background:var(--verde);}
+  .btn-accion.salida-break{background:var(--ambar);}
+  .btn-accion.entrada-break{background:var(--azul);}
+  .btn-accion.salida{background:var(--rojo);}
+  .btn-accion.completo{background:var(--gris);pointer-events:none;}
 
-  /* HEADER */
-  .header-brand { background:var(--naranja); padding:14px 20px; display:flex; align-items:center; gap:10px; }
-  .logo-text { font-size:22px; font-weight:800; color:#fff; letter-spacing:-0.5px; }
-  .logo-badge { background:#fff; color:var(--naranja); border-radius:5px; padding:2px 7px; font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; }
-  .header-clock { background:var(--dark); padding:14px 20px 16px; text-align:center; }
-  #reloj { font-size:48px; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:-2px; line-height:1; }
-  #fecha { font-size:13px; color:rgba(255,255,255,0.5); margin-top:3px; text-transform:capitalize; }
+  /* progreso de las 4 marcas */
+  .progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
+  .paso{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;}
+  .paso.hecho{border-color:var(--verde);background:#F0FDF4;}
+  .paso .p-ico{font-size:16px;margin-bottom:4px;}
+  .paso .p-nombre{font-size:9px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.02em;line-height:1.2;}
+  .paso.hecho .p-nombre{color:var(--verde);}
+  .paso .p-hora{font-size:11px;font-weight:800;color:var(--dark);margin-top:3px;min-height:14px;}
 
-  /* CRONÓMETRO */
-  .crono-wrap {
-    background:var(--dark);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 10px 20px 16px;
-    text-align:center;
-  }
-  .crono-label { font-size:11px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:4px; }
-  #cronometro {
-    font-size:32px; font-weight:800; color:#fff;
-    font-variant-numeric:tabular-nums; letter-spacing:-1px;
-    transition: color 0.3s;
-  }
-  #cronometro.pausado { color: var(--ambar); }
-  #cronometro.detenido { color: var(--gris); }
-  .crono-info { font-size:12px; color:rgba(255,255,255,0.45); margin-top:4px; min-height:16px; }
+  /* aviso sincronización */
+  .sync-aviso{display:none;align-items:center;gap:8px;background:#FEF3C7;border:1.5px solid #FCD34D;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:600;color:#92400E;margin-bottom:14px;}
+  .sync-aviso.visible{display:flex;}
+  .sync-aviso .sync-spin{animation:girar 1s linear infinite;}
+  @keyframes girar{to{transform:rotate(360deg);}}
 
-  /* PANTALLAS */
-  .pantalla { display:none; flex:1; flex-direction:column; }
-  .pantalla.activa { display:flex; }
-  .contenido { padding:20px; max-width:440px; width:100%; margin:0 auto; flex:1; }
+  .nota-pie{font-size:12px;color:var(--gris);text-align:center;line-height:1.6;}
+  .msg{font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;margin-bottom:14px;display:none;}
+  .msg.error{background:#FEE2E2;color:#991B1B;display:block;}
+  .msg.info{background:#DCFCE7;color:#166534;display:block;}
 
-  /* CAMPOS */
-  .campo { margin-bottom:16px; }
-  .campo label { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gris); margin-bottom:7px; }
-  .campo input { width:100%; padding:14px 16px; font-size:16px; font-family:'Inter',sans-serif; font-weight:500; border:2px solid var(--line); border-radius:12px; background:var(--card); color:var(--dark); transition:border-color 0.15s; }
-  .campo input:focus { outline:none; border-color:var(--naranja); }
-  .campo input::placeholder { color:#BBBABA; font-weight:400; }
-  .pin-wrap { position:relative; }
-  .pin-wrap input { letter-spacing:0.3em; font-size:22px; font-weight:700; padding-right:48px; }
-  .pin-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:18px; color:var(--gris); padding:4px; }
+  /* referencia visual en pestaña opciones */
+  .ref-card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;text-align:center;margin-bottom:16px;}
+  .ref-foto{width:120px;height:150px;border-radius:12px;object-fit:cover;margin:0 auto 10px;border:2px solid var(--naranja-border);display:block;background:#eee;}
+  .ref-titulo{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+  .ref-sub{font-size:12px;color:var(--gris);}
+  .opcion-item{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+  .opcion-item .val{color:var(--gris);font-weight:500;}
 
-  /* BOTONES */
-  .btn { width:100%; padding:15px; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-weight:700; font-size:16px; cursor:pointer; transition:transform 0.08s, filter 0.08s; margin-bottom:12px; }
-  .btn:active { transform:scale(0.97); filter:brightness(0.93); }
-  .btn-primario { background:var(--naranja); color:#fff; }
-  .btn-secundario { background:transparent; color:var(--naranja); border:2px solid var(--naranja-border); }
-  .btn:disabled { opacity:0.5; pointer-events:none; }
-  .sep { display:flex; align-items:center; gap:12px; margin:16px 0; }
-  .sep span { font-size:13px; color:var(--gris); white-space:nowrap; }
-  .sep::before, .sep::after { content:''; flex:1; height:1px; background:var(--line); }
-
-  /* BADGE USUARIO */
-  .badge-usuario { background:var(--naranja-light); border:1.5px solid var(--naranja-border); border-radius:14px; padding:12px 16px; display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-  .avatar { width:42px; height:42px; border-radius:50%; background:var(--naranja); color:#fff; font-weight:800; font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .badge-usuario .info { flex:1; min-width:0; }
-  .badge-usuario .info .nombre-user { font-weight:700; font-size:15px; color:var(--dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .badge-usuario .info .id-user { font-size:12px; color:var(--gris); margin-top:1px; }
-  .btn-salir { background:none; border:none; cursor:pointer; font-size:12px; font-weight:600; color:var(--gris); padding:4px 8px; border-radius:8px; white-space:nowrap; }
-
-  /* MARCACIONES */
-  .seccion-titulo { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gris); margin-bottom:10px; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
-
-  .btn-marca {
-    border:none; border-radius:16px; padding:16px 14px 14px;
-    color:#fff; font-family:'Inter',sans-serif; font-weight:700;
-    font-size:14px; line-height:1.25; cursor:pointer;
-    text-align:left; min-height:96px;
-    display:flex; flex-direction:column; justify-content:space-between;
-    transition:transform 0.08s, opacity 0.3s;
-    position:relative; overflow:hidden;
-  }
-  .btn-marca:active { transform:scale(0.96); }
-  .btn-marca .icono { font-size:22px; line-height:1; margin-bottom:6px; }
-  .btn-marca .etiqueta { font-size:13px; font-weight:700; line-height:1.2; }
-  .btn-marca .sub { font-size:11px; font-weight:500; opacity:0.75; margin-top:2px; }
-
-  /* check badge */
-  .btn-marca .check-badge {
-    position:absolute; top:10px; right:10px;
-    width:22px; height:22px; border-radius:50%;
-    background:rgba(255,255,255,0.3);
-    display:none; align-items:center; justify-content:center;
-    font-size:12px;
-  }
-  .btn-marca.hecho .check-badge { display:flex; }
-
-  /* hora marcada */
-  .btn-marca .hora-marcada {
-    position:absolute; bottom:10px; right:10px;
-    font-size:10px; font-weight:700;
-    background:rgba(0,0,0,0.2); border-radius:6px;
-    padding:2px 6px; display:none;
-  }
-  .btn-marca.hecho .hora-marcada { display:block; }
-
-  .btn-marca[data-tipo="ingreso_turno"] { background:var(--verde); }
-  .btn-marca[data-tipo="inicio_break"]  { background:var(--ambar); }
-  .btn-marca[data-tipo="fin_break"]     { background:var(--azul);  }
-  .btn-marca[data-tipo="salida_turno"]  { background:var(--rojo);  }
-
-  .btn-marca.hecho { opacity:0.45; pointer-events:none; }
-
-  .nota-pie { font-size:12px; color:var(--gris); text-align:center; line-height:1.6; }
-
-  /* MENSAJE */
-  .msg { font-size:13px; font-weight:600; padding:10px 14px; border-radius:10px; margin-bottom:14px; display:none; }
-  .msg.error { background:#FEE2E2; color:#991B1B; display:block; }
-  .msg.info  { background:#DCFCE7; color:#166534; display:block; }
-
-  /* MODAL */
-  #modal { position:fixed; inset:0; background:rgba(10,10,10,0.97); display:none; flex-direction:column; align-items:center; justify-content:center; padding:24px 20px; z-index:50; }
-  #modal.abierto { display:flex; }
-  .modal-chip { font-size:12px; font-weight:700; color:#fff; background:var(--naranja); border-radius:20px; padding:4px 14px; margin-bottom:10px; letter-spacing:0.04em; text-transform:uppercase; }
-  #modal-titulo { color:#fff; font-size:17px; font-weight:700; margin-bottom:14px; }
-  .marco { width:min(80vw,300px); aspect-ratio:3/4; border-radius:20px; overflow:hidden; background:#111; border:2.5px solid rgba(255,255,255,0.15); }
-  .marco video, .marco canvas { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-  .modal-acciones { display:flex; gap:10px; margin-top:14px; width:min(80vw,300px); }
-  .modal-acciones button { flex:1; padding:13px 10px; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-weight:700; font-size:14px; cursor:pointer; }
-  .b-p { background:var(--naranja); color:#fff; }
-  .b-s { background:transparent; color:rgba(255,255,255,0.7); border:1.5px solid rgba(255,255,255,0.2)!important; }
-  #estado-envio { color:rgba(255,255,255,0.6); margin-top:10px; font-size:14px; min-height:20px; text-align:center; }
-
-  /* TOAST */
-  #toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--dark); color:#fff; padding:13px 20px; border-radius:14px; font-size:14px; font-weight:600; max-width:88vw; text-align:center; opacity:0; pointer-events:none; transition:opacity 0.22s, transform 0.22s; z-index:60; box-shadow:0 4px 20px rgba(0,0,0,0.25); }
-  #toast.visible { opacity:1; transform:translateX(-50%) translateY(0); }
-  #toast.error { background:var(--rojo); }
-  #toast.exito { background:var(--verde); }
-
-  @media (prefers-reduced-motion:reduce) { *{ transition:none!important; animation:none!important; } }
+  #modal{position:fixed;inset:0;background:rgba(10,10,10,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;z-index:50;}
+  #modal.abierto{display:flex;}
+  .modal-chip{font-size:12px;font-weight:700;color:#fff;background:var(--naranja);border-radius:20px;padding:4px 14px;margin-bottom:10px;letter-spacing:0.04em;text-transform:uppercase;}
+  #modal-titulo{color:#fff;font-size:17px;font-weight:700;margin-bottom:14px;text-align:center;}
+  .marco{width:min(80vw,300px);aspect-ratio:3/4;border-radius:20px;overflow:hidden;background:#111;border:2.5px solid rgba(255,255,255,0.15);}
+  .marco video,.marco canvas{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+  .modal-acciones{display:flex;gap:10px;margin-top:14px;width:min(80vw,300px);}
+  .modal-acciones button{flex:1;padding:13px 10px;border:none;border-radius:12px;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;cursor:pointer;}
+  .b-p{background:var(--naranja);color:#fff;}
+  .b-s{background:transparent;color:rgba(255,255,255,0.7);border:1.5px solid rgba(255,255,255,0.2)!important;}
+  #estado-envio{color:rgba(255,255,255,0.6);margin-top:10px;font-size:14px;min-height:20px;text-align:center;}
+  #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--dark);color:#fff;padding:13px 20px;border-radius:14px;font-size:14px;font-weight:600;max-width:88vw;text-align:center;opacity:0;pointer-events:none;transition:opacity 0.22s,transform 0.22s;z-index:60;box-shadow:0 4px 20px rgba(0,0,0,0.25);}
+  #toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.error{background:var(--rojo);}
+  #toast.exito{background:var(--verde);}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 </style>
 </head>
 <body>
 
 <div class="header-brand">
-  <div class="logo-text">rappi</div>
-  <div class="logo-badge">MFC</div>
+  <div class="logo-mark">
+    <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="50" fill="#fff"/>
+      <path d="M28 62c0-3 2-5 5-5 2 0 4 1 5 3 2-6 7-10 12-10s10 4 12 10c1-2 3-3 5-3 3 0 5 2 5 5" stroke="#FF441B" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <rect x="34" y="30" width="32" height="24" rx="3" stroke="#FF441B" stroke-width="5" fill="none"/>
+      <path d="M34 40h32" stroke="#FF441B" stroke-width="4"/>
+    </svg>
+  </div>
+  <div class="logo-block"><div class="logo-text">RAPPI CENTRO MFC</div><div class="logo-tag">Control de asistencia</div></div>
 </div>
-<div class="header-clock">
-  <div id="reloj">--:--:--</div>
-  <div id="fecha"></div>
-</div>
+<div class="header-clock"><div id="reloj">--:--:--</div><div id="fecha"></div></div>
 <div class="crono-wrap" id="crono-wrap" style="display:none">
   <div class="crono-label">Tiempo de turno activo</div>
   <div id="cronometro" class="detenido">00:00:00</div>
@@ -174,10 +141,7 @@
 <div class="pantalla activa" id="p-login">
   <div class="contenido">
     <div class="campo"><label>Correo Gmail</label><input id="login-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email"></div>
-    <div class="campo">
-      <label>PIN (4 dígitos)</label>
-      <div class="pin-wrap"><input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"><button class="pin-toggle" onclick="togglePin('login-pin',this)" type="button">👁</button></div>
-    </div>
+    <div class="campo"><label>Contraseña</label><div class="pin-wrap"><input id="login-pin" type="password" placeholder="Mínimo 8 caracteres" autocomplete="current-password"><button class="pin-toggle" onclick="togglePin('login-pin',this)" type="button">👁</button></div></div>
     <div id="login-msg" class="msg"></div>
     <button class="btn btn-primario" id="btn-login">Ingresar</button>
     <div class="sep"><span>¿Primera vez?</span></div>
@@ -189,56 +153,76 @@
 <div class="pantalla" id="p-registro">
   <div class="contenido">
     <div class="campo"><label>Nombre completo</label><input id="reg-nombre" type="text" placeholder="Ej: María Torres" autocomplete="name"></div>
+    <div class="campo"><label>DNI</label><input id="reg-dni" type="text" inputmode="numeric" placeholder="Ej: 74944352"></div>
     <div class="campo"><label>Correo Gmail</label><input id="reg-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email" autocomplete="email"></div>
-    <div class="campo"><label>Elige tu PIN (4 dígitos)</label><div class="pin-wrap"><input id="reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"><button class="pin-toggle" onclick="togglePin('reg-pin',this)" type="button">👁</button></div></div>
-    <div class="campo"><label>Confirma tu PIN</label><div class="pin-wrap"><input id="reg-pin2" type="password" inputmode="numeric" maxlength="4" placeholder="••••"><button class="pin-toggle" onclick="togglePin('reg-pin2',this)" type="button">👁</button></div></div>
+    <div class="campo"><label>Crea tu contraseña</label><div class="pin-wrap"><input id="reg-pin" type="password" placeholder="Mínimo 8 caracteres"><button class="pin-toggle" onclick="togglePin('reg-pin',this)" type="button">👁</button></div></div>
+    <div class="campo"><label>Confirma tu contraseña</label><div class="pin-wrap"><input id="reg-pin2" type="password" placeholder="Repite tu contraseña"><button class="pin-toggle" onclick="togglePin('reg-pin2',this)" type="button">👁</button></div></div>
     <div id="reg-msg" class="msg"></div>
-    <button class="btn btn-primario" id="btn-registro">Crear cuenta</button>
+    <button class="btn btn-primario" id="btn-registro">Continuar y tomar foto</button>
     <div class="sep"><span>¿Ya tienes cuenta?</span></div>
     <button class="btn btn-secundario" onclick="mostrarPantalla('p-login')">Iniciar sesión</button>
   </div>
 </div>
 
-<!-- MARCACIONES -->
-<div class="pantalla" id="p-marcaciones">
-  <div class="contenido">
+<!-- APP PRINCIPAL -->
+<div class="pantalla" id="p-app">
+  <div class="tabs">
+    <div class="tab activo" data-tab="marcar" onclick="cambiarTab('marcar')">Asistencia</div>
+    <div class="tab" data-tab="historial" onclick="cambiarTab('historial')">Historial</div>
+    <div class="tab" data-tab="opciones" onclick="cambiarTab('opciones')">Más</div>
+  </div>
+
+  <!-- TAB MARCAR -->
+  <div class="contenido tab-cont" id="tab-marcar">
     <div class="badge-usuario">
       <div class="avatar" id="avatar-iniciales">--</div>
-      <div class="info">
-        <div class="nombre-user" id="user-nombre">--</div>
-        <div class="id-user" id="user-id">--</div>
-      </div>
-      <button class="btn-salir" onclick="cerrarSesion()">Salir</button>
+      <div class="info"><div class="nombre-user" id="user-nombre">--</div><div class="id-user" id="user-id">--</div></div>
     </div>
 
-    <div class="seccion-titulo">Registrar marcación</div>
-    <div class="grid">
-      <button class="btn-marca" data-tipo="ingreso_turno">
-        <div class="check-badge">✓</div>
-        <div class="icono">▶</div>
-        <div><div class="etiqueta">Ingreso de turno</div><div class="sub">Inicio de jornada</div></div>
-        <div class="hora-marcada"></div>
-      </button>
-      <button class="btn-marca" data-tipo="inicio_break">
-        <div class="check-badge">✓</div>
-        <div class="icono">⏸</div>
-        <div><div class="etiqueta">Inicio de break</div><div class="sub">Salida a descanso</div></div>
-        <div class="hora-marcada"></div>
-      </button>
-      <button class="btn-marca" data-tipo="fin_break">
-        <div class="check-badge">✓</div>
-        <div class="icono">↩</div>
-        <div><div class="etiqueta">Fin de break</div><div class="sub">Regreso al turno</div></div>
-        <div class="hora-marcada"></div>
-      </button>
-      <button class="btn-marca" data-tipo="salida_turno">
-        <div class="check-badge">✓</div>
-        <div class="icono">■</div>
-        <div><div class="etiqueta">Salida de turno</div><div class="sub">Fin de jornada</div></div>
-        <div class="hora-marcada"></div>
-      </button>
+    <div class="sync-aviso" id="sync-aviso">
+      <span class="sync-spin">⟳</span>
+      <span id="sync-texto">1 marca pendiente de sincronizar</span>
     </div>
-    <p class="nota-pie">Cada marcación registra selfie y ubicación GPS.<br>Permite el acceso cuando el dispositivo lo solicite.</p>
+
+    <div class="paso-actual">
+      <div class="paso-label" id="paso-label">Toca para registrar</div>
+    </div>
+
+    <button class="btn-accion entrada" id="btn-accion">
+      <span class="ico">▶</span>
+      <span id="accion-texto">Entrada de turno</span>
+      <span class="sub" id="accion-sub">Inicio de jornada</span>
+    </button>
+
+    <div class="progreso">
+      <div class="paso" data-paso="ingreso_turno"><div class="p-ico">▶</div><div class="p-nombre">Entrada turno</div><div class="p-hora"></div></div>
+      <div class="paso" data-paso="inicio_break"><div class="p-ico">⏸</div><div class="p-nombre">Salida break</div><div class="p-hora"></div></div>
+      <div class="paso" data-paso="fin_break"><div class="p-ico">↩</div><div class="p-nombre">Retorno break</div><div class="p-hora"></div></div>
+      <div class="paso" data-paso="salida_turno"><div class="p-ico">■</div><div class="p-nombre">Salida turno</div><div class="p-hora"></div></div>
+    </div>
+
+    <p class="nota-pie">Cada marca registra selfie, ubicación GPS y hora exacta.<br>Si no hay señal, la marca se guarda y se sincroniza sola después.</p>
+  </div>
+
+  <!-- TAB HISTORIAL -->
+  <div class="contenido tab-cont" id="tab-historial" style="display:none">
+    <div class="paso-label">Marcas de hoy</div>
+    <div id="historial-lista"></div>
+  </div>
+
+  <!-- TAB OPCIONES -->
+  <div class="contenido tab-cont" id="tab-opciones" style="display:none">
+    <div class="ref-card">
+      <img class="ref-foto" id="ref-foto" alt="Foto de referencia">
+      <div class="ref-titulo">Foto de referencia</div>
+      <div class="ref-sub">Registrada al crear tu cuenta</div>
+    </div>
+    <div class="opcion-item"><span>Nombre</span><span class="val" id="op-nombre">--</span></div>
+    <div class="opcion-item"><span>ID</span><span class="val" id="op-id">--</span></div>
+    <div class="opcion-item"><span>DNI</span><span class="val" id="op-dni">--</span></div>
+    <div class="opcion-item" id="op-sync"><span>Marcas pendientes</span><span class="val" id="op-pend">0</span></div>
+    <button class="btn btn-secundario" onclick="sincronizarAhora()">Sincronizar ahora</button>
+    <button class="btn btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
 </div>
 
@@ -246,15 +230,12 @@
 <div id="modal">
   <div class="modal-chip">Rappi MFC</div>
   <div id="modal-titulo">Selfie de marcación</div>
-  <div class="marco">
-    <video id="video" autoplay playsinline muted></video>
-    <canvas id="canvas" style="display:none"></canvas>
-  </div>
+  <div class="marco"><video id="video" autoplay playsinline muted></video><canvas id="canvas" style="display:none"></canvas></div>
   <div class="modal-acciones">
     <button class="b-s" id="btn-cancelar">Cancelar</button>
-    <button class="b-p" id="btn-capturar">Tomar selfie</button>
+    <button class="b-p" id="btn-capturar">Tomar foto</button>
     <button class="b-p" id="btn-confirmar" style="display:none">Confirmar</button>
-    <button class="b-s" id="btn-repetir"   style="display:none">Repetir</button>
+    <button class="b-s" id="btn-repetir" style="display:none">Repetir</button>
   </div>
   <div id="estado-envio"></div>
 </div>
@@ -264,259 +245,180 @@
 <script>
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHBcNgnrr0ihTByaWew6DY8KM3l16b4Z9CrWyXNJwwM5RSa4IxctbnUbZI8xoxhkNEpg/exec';
 
-const ETIQUETAS = { ingreso_turno:'Ingreso de turno', inicio_break:'Inicio de break', fin_break:'Fin de break', salida_turno:'Salida de turno' };
+// Orden fijo de las 4 marcas y su config visual
+const FLUJO = ['ingreso_turno','inicio_break','fin_break','salida_turno'];
+const CONFIG = {
+  ingreso_turno:{txt:'Entrada de turno', sub:'Inicio de jornada', ico:'▶', clase:'entrada'},
+  inicio_break: {txt:'Salida a break',   sub:'Inicio de descanso',ico:'⏸', clase:'salida-break'},
+  fin_break:    {txt:'Retorno de break', sub:'Fin de descanso',   ico:'↩', clase:'entrada-break'},
+  salida_turno: {txt:'Salida de turno',  sub:'Fin de jornada',    ico:'■', clase:'salida'}
+};
 
 let sesion = null;
-let tipoActual = null;
 let stream = null;
 let fotoBase64 = null;
+let modoRegistroFoto = false; // true = tomando foto de referencia en registro
+let tipoActual = null;
+let regTemp = null; // datos de registro pendientes de foto
+
+let horasMarcadas = {}; // {ingreso_turno:'08:01:00', ...}
 
 // ── CRONÓMETRO ──
-let cronoSegundos  = 0;   // segundos de turno activo acumulados
-let cronoInterval  = null;
-let cronoEstado    = 'inactivo'; // inactivo | corriendo | pausado | detenido
-let horasMarcadas  = {};  // { ingreso_turno:'08:01', ... }
-
-function cronoTick() {
-  cronoSegundos++;
-  renderCrono();
+let cronoSegundos=0, cronoInterval=null, cronoEstado='inactivo';
+function cronoTick(){cronoSegundos++;renderCrono();}
+function renderCrono(){
+  const h=String(Math.floor(cronoSegundos/3600)).padStart(2,'0');
+  const m=String(Math.floor((cronoSegundos%3600)/60)).padStart(2,'0');
+  const s=String(cronoSegundos%60).padStart(2,'0');
+  const el=document.getElementById('cronometro');
+  el.textContent=h+':'+m+':'+s;
+  el.className=cronoEstado==='pausado'?'pausado':cronoEstado==='detenido'?'detenido':'';
 }
+function toSeg(hms){if(!hms)return 0;const p=String(hms).split(':');return (parseInt(p[0])||0)*3600+(parseInt(p[1])||0)*60+(parseInt(p[2])||0);}
+function ahoraSeg(){const d=new Date();return d.getHours()*3600+d.getMinutes()*60+d.getSeconds();}
 
-function renderCrono() {
-  const h = String(Math.floor(cronoSegundos/3600)).padStart(2,'0');
-  const m = String(Math.floor((cronoSegundos%3600)/60)).padStart(2,'0');
-  const s = String(cronoSegundos%60).padStart(2,'0');
-  const el = document.getElementById('cronometro');
-  el.textContent = h+':'+m+':'+s;
-  el.className = cronoEstado === 'pausado' ? 'pausado' : cronoEstado === 'detenido' ? 'detenido' : '';
-}
-
-function actualizarCronoInfo() {
-  const info = document.getElementById('crono-info');
-  if (cronoEstado === 'pausado' && horasMarcadas.inicio_break) {
-    info.textContent = 'En break desde las ' + horasMarcadas.inicio_break;
-  } else if (cronoEstado === 'detenido' && horasMarcadas.salida_turno) {
-    info.textContent = 'Turno finalizado a las ' + horasMarcadas.salida_turno;
-  } else if (cronoEstado === 'corriendo' && horasMarcadas.ingreso_turno) {
-    info.textContent = 'Turno iniciado a las ' + horasMarcadas.ingreso_turno;
-  } else {
-    info.textContent = '';
-  }
-}
-
-function aplicarEstadoCrono(marcaciones) {
-  // Reconstruir segundos y estado según marcaciones del servidor
-  const ini = marcaciones.ingreso_turno || '';
-  const ib  = marcaciones.inicio_break  || '';
-  const fb  = marcaciones.fin_break     || '';
-  const sal = marcaciones.salida_turno  || '';
-
+function reconstruirCrono(){
+  const ini=horasMarcadas.ingreso_turno||'', ib=horasMarcadas.inicio_break||'', fb=horasMarcadas.fin_break||'', sal=horasMarcadas.salida_turno||'';
   clearInterval(cronoInterval);
-
-  if (!ini) { cronoEstado = 'inactivo'; document.getElementById('crono-wrap').style.display='none'; return; }
-
-  document.getElementById('crono-wrap').style.display = 'block';
-
-  function toSeg(hms) {
-    if(!hms) return 0;
-    const p = hms.split(':');
-    return parseInt(p[0]||0)*3600 + parseInt(p[1]||0)*60 + parseInt(p[2]||0);
+  if(!ini){cronoEstado='inactivo';document.getElementById('crono-wrap').style.display='none';return;}
+  document.getElementById('crono-wrap').style.display='block';
+  if(sal){
+    let a=toSeg(sal)-toSeg(ini);
+    if(ib&&fb)a-=(toSeg(fb)-toSeg(ib)); else if(ib&&!fb)a-=(toSeg(sal)-toSeg(ib));
+    cronoSegundos=Math.max(0,a);cronoEstado='detenido';
+  }else if(ib&&!fb){
+    cronoSegundos=Math.max(0,toSeg(ib)-toSeg(ini));cronoEstado='pausado';
+  }else if(fb){
+    cronoSegundos=Math.max(0,(toSeg(ib)-toSeg(ini))+(ahoraSeg()-toSeg(fb)));cronoEstado='corriendo';cronoInterval=setInterval(cronoTick,1000);
+  }else{
+    cronoSegundos=Math.max(0,ahoraSeg()-toSeg(ini));cronoEstado='corriendo';cronoInterval=setInterval(cronoTick,1000);
   }
-  function ahoraEnSeg() {
-    const d = new Date();
-    return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds();
-  }
-
-  const segIni = toSeg(ini);
-  const segIb  = toSeg(ib);
-  const segFb  = toSeg(fb);
-  const segSal = toSeg(sal);
-  const segAhora = ahoraEnSeg();
-
-  if (sal) {
-    // Turno terminado
-    let activo = (segSal - segIni);
-    if (ib && fb) activo -= (segFb - segIb);
-    else if (ib && !fb) activo -= (segSal - segIb);
-    cronoSegundos = Math.max(0, activo);
-    cronoEstado   = 'detenido';
-  } else if (ib && !fb) {
-    // En break
-    cronoSegundos = Math.max(0, segIb - segIni);
-    cronoEstado   = 'pausado';
-  } else if (fb) {
-    // Regresó del break
-    const tiempoAntesBrk = segIb - segIni;
-    const tiempoDesFb    = segAhora - segFb;
-    cronoSegundos = Math.max(0, tiempoAntesBrk + tiempoDesFb);
-    cronoEstado   = 'corriendo';
-    cronoInterval = setInterval(cronoTick, 1000);
-  } else {
-    // Solo ingresó, corriendo
-    cronoSegundos = Math.max(0, segAhora - segIni);
-    cronoEstado   = 'corriendo';
-    cronoInterval = setInterval(cronoTick, 1000);
-  }
-
   renderCrono();
-  actualizarCronoInfo();
-}
-
-function avanzarCronoPorMarcacion(tipo, hora) {
-  horasMarcadas[tipo] = hora;
-
-  function toSeg(hms) {
-    if(!hms) return 0;
-    const p = hms.split(':');
-    return parseInt(p[0]||0)*3600 + parseInt(p[1]||0)*60 + parseInt(p[2]||0);
-  }
-
-  clearInterval(cronoInterval);
-  document.getElementById('crono-wrap').style.display = 'block';
-
-  if (tipo === 'ingreso_turno') {
-    cronoSegundos = 0;
-    cronoEstado   = 'corriendo';
-    cronoInterval = setInterval(cronoTick, 1000);
-  } else if (tipo === 'inicio_break') {
-    cronoEstado = 'pausado';
-  } else if (tipo === 'fin_break') {
-    cronoEstado   = 'corriendo';
-    cronoInterval = setInterval(cronoTick, 1000);
-  } else if (tipo === 'salida_turno') {
-    cronoEstado = 'detenido';
-  }
-
-  renderCrono();
-  actualizarCronoInfo();
+  const info=document.getElementById('crono-info');
+  if(cronoEstado==='pausado')info.textContent='En break desde las '+ (ib?ib.substring(0,5):'');
+  else if(cronoEstado==='detenido')info.textContent='Turno finalizado a las '+(sal?sal.substring(0,5):'');
+  else if(cronoEstado==='corriendo')info.textContent='Turno iniciado a las '+(ini?ini.substring(0,5):'');
+  else info.textContent='';
 }
 
 // ── RELOJ ──
-function tick() {
-  const d = new Date();
-  document.getElementById('reloj').textContent = d.toLocaleTimeString('es-PE',{hour12:false});
-  document.getElementById('fecha').textContent  = d.toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-}
-setInterval(tick,1000); tick();
+function tick(){const d=new Date();document.getElementById('reloj').textContent=d.toLocaleTimeString('es-PE',{hour12:false});document.getElementById('fecha').textContent=d.toLocaleDateString('es-PE',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+setInterval(tick,1000);tick();
 
-// ── PANTALLAS ──
-function mostrarPantalla(id) {
-  document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('activa'));
-  document.getElementById(id).classList.add('activa');
-  limpiarMensajes();
+// ── PANTALLAS Y TABS ──
+function mostrarPantalla(id){document.querySelectorAll('.pantalla').forEach(p=>p.classList.remove('activa'));document.getElementById(id).classList.add('activa');limpiarMensajes();}
+function cambiarTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('activo',x.dataset.tab===t));
+  document.querySelectorAll('.tab-cont').forEach(c=>c.style.display='none');
+  document.getElementById('tab-'+t).style.display='block';
+  if(t==='historial')renderHistorial();
+  if(t==='opciones')renderOpciones();
 }
-function limpiarMensajes() { document.querySelectorAll('.msg').forEach(m=>{m.className='msg';m.textContent='';}); }
-function mostrarMsg(id,txt,tipo) { const el=document.getElementById(id); el.textContent=txt; el.className='msg '+tipo; }
+function limpiarMensajes(){document.querySelectorAll('.msg').forEach(m=>{m.className='msg';m.textContent='';});}
+function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);el.textContent=txt;el.className='msg '+tipo;}
+function togglePin(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
 
 // ── SESIÓN GUARDADA ──
-try {
-  const s = JSON.parse(localStorage.getItem('rappi_sesion')||'null');
-  if (s && s.id && s.nombre) { sesion=s; aplicarSesion(); cargarEstadoHoy(); mostrarPantalla('p-marcaciones'); }
-} catch(e){}
+try{const s=JSON.parse(localStorage.getItem('rappi_sesion')||'null');if(s&&s.id&&s.nombre){sesion=s;aplicarSesion();mostrarPantalla('p-app');cargarEstadoHoy();procesarCola();}}catch(e){}
 
 // ── LOGIN ──
-document.getElementById('btn-login').addEventListener('click', async () => {
-  const gmail = document.getElementById('login-gmail').value.trim().toLowerCase();
-  const pin   = document.getElementById('login-pin').value.trim();
-  if (!gmail||!pin) { mostrarMsg('login-msg','Completa todos los campos.','error'); return; }
-  const btn = document.getElementById('btn-login');
-  btn.disabled=true; btn.textContent='Verificando…'; limpiarMensajes();
-  try {
-    const res = await api({accion:'login',gmail,pin});
-    if (res.ok) {
-      sesion={id:res.id,nombre:res.nombre};
-      localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
-      aplicarSesion();
-      await cargarEstadoHoy();
-      mostrarPantalla('p-marcaciones');
-    } else { mostrarMsg('login-msg',res.error,'error'); }
-  } catch(e) { mostrarMsg('login-msg','Error de conexión.','error'); }
-  finally { btn.disabled=false; btn.textContent='Ingresar'; }
+document.getElementById('btn-login').addEventListener('click',async()=>{
+  const gmail=document.getElementById('login-gmail').value.trim().toLowerCase();
+  const pin=document.getElementById('login-pin').value.trim();
+  if(!gmail||!pin){mostrarMsg('login-msg','Completa todos los campos.','error');return;}
+  const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Verificando…';limpiarMensajes();
+  try{
+    const res=await api({accion:'login',gmail,pin});
+    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||''};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    else mostrarMsg('login-msg',res.error,'error');
+  }catch(e){mostrarMsg('login-msg','Error de conexión.','error');}
+  finally{btn.disabled=false;btn.textContent='Ingresar';}
 });
 
-// ── REGISTRO ──
-document.getElementById('btn-registro').addEventListener('click', async () => {
+// ── REGISTRO: primero valida, luego pide foto de referencia ──
+document.getElementById('btn-registro').addEventListener('click',()=>{
   const nombre=document.getElementById('reg-nombre').value.trim();
+  const dni=document.getElementById('reg-dni').value.trim();
   const gmail=document.getElementById('reg-gmail').value.trim().toLowerCase();
   const pin=document.getElementById('reg-pin').value.trim();
   const pin2=document.getElementById('reg-pin2').value.trim();
-  if (!nombre||!gmail||!pin||!pin2){mostrarMsg('reg-msg','Completa todos los campos.','error');return;}
-  if (!/^\d{4}$/.test(pin)){mostrarMsg('reg-msg','El PIN debe ser de 4 dígitos.','error');return;}
-  if (pin!==pin2){mostrarMsg('reg-msg','Los PINs no coinciden.','error');return;}
-  if (!/@gmail\.com$/.test(gmail)){mostrarMsg('reg-msg','Ingresa un Gmail válido.','error');return;}
-  const btn=document.getElementById('btn-registro');
-  btn.disabled=true; btn.textContent='Creando cuenta…'; limpiarMensajes();
-  try {
-    const res=await api({accion:'registrar',nombre,gmail,pin});
-    if (res.ok) {
-      sesion={id:res.id,nombre:res.nombre};
-      localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
-      aplicarSesion();
-      mostrarPantalla('p-marcaciones');
-      mostrarToast('¡Bienvenido! Tu ID es '+res.id,'exito');
-    } else { mostrarMsg('reg-msg',res.error,'error'); }
-  } catch(e) { mostrarMsg('reg-msg','Error de conexión.','error'); }
-  finally { btn.disabled=false; btn.textContent='Crear cuenta'; }
+  if(!nombre||!dni||!gmail||!pin||!pin2){mostrarMsg('reg-msg','Completa todos los campos.','error');return;}
+  if(pin.length<8){mostrarMsg('reg-msg','La contraseña debe tener mínimo 8 caracteres.','error');return;}
+  if(pin!==pin2){mostrarMsg('reg-msg','Las contraseñas no coinciden.','error');return;}
+  if(!/@gmail\.com$/.test(gmail)){mostrarMsg('reg-msg','Ingresa un Gmail válido.','error');return;}
+  regTemp={nombre,dni,gmail,pin};
+  modoRegistroFoto=true;
+  document.getElementById('modal-titulo').textContent='Foto de referencia — mira a la cámara';
+  abrirModal();
+  iniciarCamara();
 });
 
-// ── APLICAR SESIÓN ──
-function aplicarSesion() {
-  if (!sesion) return;
+function aplicarSesion(){
+  if(!sesion)return;
   document.getElementById('user-nombre').textContent=sesion.nombre;
   document.getElementById('user-id').textContent=sesion.id;
   const ini=sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
   document.getElementById('avatar-iniciales').textContent=ini;
 }
 
-// ── CARGAR ESTADO DE HOY DESDE EL SERVIDOR ──
-async function cargarEstadoHoy() {
-  if (!sesion) return;
-  const hoy = fechaHoy();
-  try {
-    const res = await api({accion:'estado_hoy', id:sesion.id, fecha:hoy});
-    if (res.ok && res.marcaciones) {
-      horasMarcadas = {};
-      Object.keys(res.marcaciones).forEach(tipo => {
-        const hora = res.marcaciones[tipo];
-        if (hora && hora !== 'undefined' && hora.trim() !== '') {
-          horasMarcadas[tipo] = hora;
-          marcarHechoUI(tipo, hora);
-        }
-      });
-      aplicarEstadoCrono(res.marcaciones);
+// ── CARGA ESTADO HOY ──
+async function cargarEstadoHoy(){
+  if(!sesion)return;
+  try{
+    const res=await api({accion:'estado_hoy',id:sesion.id,fecha:fechaHoy()});
+    if(res.ok&&res.marcaciones){
+      horasMarcadas={};
+      Object.keys(res.marcaciones).forEach(t=>{const h=res.marcaciones[t];if(h&&h!=='undefined'&&String(h).trim()!=='')horasMarcadas[t]=h;});
+      actualizarUI();
+      reconstruirCrono();
     }
-  } catch(e) {}
+  }catch(e){}
 }
 
-// ── CERRAR SESIÓN ──
-function cerrarSesion() {
-  sesion=null;
-  clearInterval(cronoInterval);
-  cronoSegundos=0; cronoEstado='inactivo'; horasMarcadas={};
-  document.getElementById('crono-wrap').style.display='none';
-  document.getElementById('cronometro').textContent='00:00:00';
-  try{localStorage.removeItem('rappi_sesion');}catch(e){}
-  document.querySelectorAll('.btn-marca').forEach(b=>{b.classList.remove('hecho'); b.querySelector('.hora-marcada').textContent='';});
-  mostrarPantalla('p-login');
-}
-
-function togglePin(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
-
-// ── MARCACIONES ──
-document.querySelectorAll('.btn-marca').forEach(btn=>{
-  btn.addEventListener('click', async ()=>{
-    if (!sesion) return;
-    if (SCRIPT_URL.indexOf('http')!==0){mostrarToast('App no conectada.','error');return;}
-    tipoActual=btn.dataset.tipo;
-    document.getElementById('modal-titulo').textContent=ETIQUETAS[tipoActual];
-    abrirModal();
-    try {
-      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}},audio:false});
-      document.getElementById('video').srcObject=stream;
-    } catch(e){cerrarModal();mostrarToast('No se pudo abrir la cámara.','error');}
+// ── ACTUALIZAR UI: botón dinámico + progreso ──
+function actualizarUI(){
+  // marcar pasos hechos
+  FLUJO.forEach(tipo=>{
+    const pasoEl=document.querySelector('.paso[data-paso="'+tipo+'"]');
+    if(horasMarcadas[tipo]){pasoEl.classList.add('hecho');pasoEl.querySelector('.p-hora').textContent=String(horasMarcadas[tipo]).substring(0,5);}
+    else{pasoEl.classList.remove('hecho');pasoEl.querySelector('.p-hora').textContent='';}
   });
+  // determinar el siguiente paso
+  const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
+  const btn=document.getElementById('btn-accion');
+  if(!siguiente){
+    btn.className='btn-accion completo';
+    document.getElementById('accion-texto').textContent='Jornada completa';
+    document.getElementById('accion-sub').textContent='Las 4 marcas registradas';
+    btn.querySelector('.ico').textContent='✓';
+    document.getElementById('paso-label').textContent='¡Terminaste por hoy!';
+  }else{
+    const c=CONFIG[siguiente];
+    btn.className='btn-accion '+c.clase;
+    document.getElementById('accion-texto').textContent=c.txt;
+    document.getElementById('accion-sub').textContent=c.sub;
+    btn.querySelector('.ico').textContent=c.ico;
+    document.getElementById('paso-label').textContent='Siguiente marca';
+  }
+}
+
+// ── BOTÓN DE ACCIÓN ──
+document.getElementById('btn-accion').addEventListener('click',()=>{
+  if(!sesion)return;
+  const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
+  if(!siguiente)return;
+  tipoActual=siguiente;
+  modoRegistroFoto=false;
+  document.getElementById('modal-titulo').textContent=CONFIG[siguiente].txt;
+  abrirModal();
+  iniciarCamara();
 });
 
+// ── CÁMARA ──
+async function iniciarCamara(){
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}},audio:false});document.getElementById('video').srcObject=stream;}
+  catch(e){cerrarModal();mostrarToast('No se pudo abrir la cámara. Revisa permisos.','error');}
+}
 function abrirModal(){
   fotoBase64=null;
   document.getElementById('video').style.display='block';
@@ -528,96 +430,151 @@ function abrirModal(){
   document.getElementById('estado-envio').textContent='';
   document.getElementById('modal').classList.add('abierto');
 }
-function cerrarModal(){
-  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
-  document.getElementById('modal').classList.remove('abierto');
-}
-document.getElementById('btn-cancelar').addEventListener('click',cerrarModal);
+function cerrarModal(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}document.getElementById('modal').classList.remove('abierto');}
+document.getElementById('btn-cancelar').addEventListener('click',()=>{cerrarModal();if(modoRegistroFoto){modoRegistroFoto=false;regTemp=null;}});
 
 document.getElementById('btn-capturar').addEventListener('click',()=>{
   const v=document.getElementById('video'),c=document.getElementById('canvas');
-  const e=Math.min(1,640/v.videoWidth);
-  c.width=v.videoWidth*e; c.height=v.videoHeight*e;
+  const e=Math.min(1,640/v.videoWidth);c.width=v.videoWidth*e;c.height=v.videoHeight*e;
   c.getContext('2d').drawImage(v,0,0,c.width,c.height);
   fotoBase64=c.toDataURL('image/jpeg',0.72).split(',')[1];
-  v.style.display='none'; c.style.display='block';
+  v.style.display='none';c.style.display='block';
   document.getElementById('btn-capturar').style.display='none';
   document.getElementById('btn-confirmar').style.display='inline-block';
   document.getElementById('btn-repetir').style.display='inline-block';
 });
-
 document.getElementById('btn-repetir').addEventListener('click',()=>{
-  fotoBase64=null;
-  document.getElementById('video').style.display='block';
-  document.getElementById('canvas').style.display='none';
-  document.getElementById('btn-capturar').style.display='inline-block';
-  document.getElementById('btn-confirmar').style.display='none';
-  document.getElementById('btn-repetir').style.display='none';
+  fotoBase64=null;document.getElementById('video').style.display='block';document.getElementById('canvas').style.display='none';
+  document.getElementById('btn-capturar').style.display='inline-block';document.getElementById('btn-confirmar').style.display='none';document.getElementById('btn-repetir').style.display='none';
 });
 
-document.getElementById('btn-confirmar').addEventListener('click', async ()=>{
+// ── CONFIRMAR ──
+document.getElementById('btn-confirmar').addEventListener('click',async()=>{
   const estado=document.getElementById('estado-envio');
-  const btnC=document.getElementById('btn-confirmar');
-  const btnR=document.getElementById('btn-repetir');
-  btnC.disabled=true; btnR.style.display='none';
-  document.getElementById('btn-cancelar').style.display='none';
-  estado.textContent='Obteniendo ubicación…';
+  const btnC=document.getElementById('btn-confirmar'),btnR=document.getElementById('btn-repetir');
+  btnC.disabled=true;btnR.style.display='none';document.getElementById('btn-cancelar').style.display='none';
 
-  let lat='',lng='';
-  try {
-    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000}));
-    lat=pos.coords.latitude.toFixed(6); lng=pos.coords.longitude.toFixed(6);
-  } catch(e){
-    estado.textContent='';
-    mostrarToast('No se pudo obtener ubicación. Activa el GPS.','error');
-    btnC.disabled=false; btnR.style.display='inline-block';
-    document.getElementById('btn-cancelar').style.display='inline-block';
+  // Registro de foto de referencia
+  if(modoRegistroFoto){
+    estado.textContent='Creando tu cuenta…';
+    try{
+      const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
+      if(res.ok){
+        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:''};
+        localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
+        cerrarModal();modoRegistroFoto=false;regTemp=null;
+        aplicarSesion();mostrarPantalla('p-app');
+        mostrarToast('¡Bienvenido! Tu ID es '+res.id,'exito');
+      }else{cerrarModal();mostrarToast(res.error||'No se pudo registrar.','error');}
+    }catch(e){cerrarModal();mostrarToast('Error de conexión al registrar.','error');}
+    finally{btnC.disabled=false;}
     return;
   }
 
-  estado.textContent='Registrando marcación…';
-  const ahora=new Date();
-  const fecha=fechaHoy();
-  const hora=ahora.toLocaleTimeString('es-PE',{hour12:false});
+  // Marcación normal — CONGELAR hora y ubicación AHORA
+  estado.textContent='Obteniendo ubicación…';
+  let lat='',lng='';
+  try{
+    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000}));
+    lat=pos.coords.latitude.toFixed(6);lng=pos.coords.longitude.toFixed(6);
+  }catch(e){/* seguimos sin ubicación, no perdemos la marca */}
 
-  try {
-    const res=await api({accion:'marcar',id:sesion.id,nombre:sesion.nombre,tipo:tipoActual,fecha,hora,lat,lng,foto:fotoBase64});
-    cerrarModal();
-    if(res.ok){
-      mostrarToast('✓ '+res.mensaje,'exito');
-      horasMarcadas[tipoActual]=hora;
-      marcarHechoUI(tipoActual,hora);
-      avanzarCronoPorMarcacion(tipoActual,hora);
-    } else { mostrarToast(res.error||'No se pudo registrar.','error'); }
-  } catch(e){ cerrarModal(); mostrarToast('Error de conexión.','error'); }
-  finally { btnC.disabled=false; }
+  const ahora=new Date();
+  const marca={
+    id:sesion.id, nombre:sesion.nombre, tipo:tipoActual,
+    fecha:fechaHoy(), hora:ahora.toLocaleTimeString('es-PE',{hour12:false}),
+    lat, lng, foto:fotoBase64,
+    _localId: Date.now()+'_'+Math.random().toString(36).slice(2,7)
+  };
+
+  // 1) Guardar YA en la UI y en cola local (nunca se pierde)
+  horasMarcadas[tipoActual]=marca.hora;
+  encolarMarca(marca);
+  actualizarUI();
+  reconstruirCrono();
+  cerrarModal();
+  mostrarToast('✓ '+CONFIG[tipoActual].txt+' registrada a las '+marca.hora.substring(0,5),'exito');
+  btnC.disabled=false;
+
+  // 2) Intentar subir en segundo plano
+  procesarCola();
 });
 
-function marcarHechoUI(tipo,hora){
-  const btn=document.querySelector('.btn-marca[data-tipo="'+tipo+'"]');
-  if(!btn) return;
-  btn.classList.add('hecho');
-  const hm=btn.querySelector('.hora-marcada');
-  if(hm && hora) hm.textContent=hora.substring(0,5);
+// ── COLA DE SINCRONIZACIÓN ──
+function claveCola(){return 'rappi_cola_'+(sesion?sesion.id:'anon');}
+function leerCola(){try{return JSON.parse(localStorage.getItem(claveCola())||'[]');}catch(e){return [];}}
+function guardarCola(c){try{localStorage.setItem(claveCola(),JSON.stringify(c));}catch(e){}}
+function encolarMarca(m){const c=leerCola();c.push(m);guardarCola(c);actualizarSyncAviso();}
+
+async function procesarCola(){
+  const cola=leerCola();
+  if(cola.length===0){actualizarSyncAviso();return;}
+  const pendientes=[];
+  for(const marca of cola){
+    try{
+      const res=await api({accion:'marcar',id:marca.id,nombre:marca.nombre,tipo:marca.tipo,fecha:marca.fecha,hora:marca.hora,lat:marca.lat,lng:marca.lng,foto:marca.foto});
+      if(!res.ok && !res.duplicado){pendientes.push(marca);} // falló: reintentar luego
+    }catch(e){pendientes.push(marca);} // sin conexión: reintentar luego
+  }
+  guardarCola(pendientes);
+  actualizarSyncAviso();
 }
 
-function fechaHoy(){
-  const d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function actualizarSyncAviso(){
+  const n=leerCola().length;
+  const aviso=document.getElementById('sync-aviso');
+  const opPend=document.getElementById('op-pend');
+  if(opPend)opPend.textContent=n;
+  if(n>0){aviso.classList.add('visible');document.getElementById('sync-texto').textContent=n+(n===1?' marca pendiente de sincronizar':' marcas pendientes de sincronizar');}
+  else aviso.classList.remove('visible');
 }
 
-async function api(payload){
-  const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
-  return r.json();
+function sincronizarAhora(){mostrarToast('Sincronizando…','');procesarCola().then(()=>{const n=leerCola().length;mostrarToast(n===0?'✓ Todo sincronizado':n+' marcas aún pendientes',n===0?'exito':'error');});}
+
+// Reintento automático cada 30s y al recuperar conexión
+setInterval(()=>{if(sesion&&leerCola().length>0)procesarCola();},30000);
+window.addEventListener('online',()=>{if(sesion)procesarCola();});
+
+// ── HISTORIAL ──
+function renderHistorial(){
+  const cont=document.getElementById('historial-lista');
+  const cola=leerCola();
+  const pendSet={};cola.forEach(m=>pendSet[m.tipo]=true);
+  let html='';
+  FLUJO.forEach(tipo=>{
+    const c=CONFIG[tipo];const hora=horasMarcadas[tipo];
+    const estado=hora?(pendSet[tipo]?'⟳ pendiente':'✓ sincronizada'):'— sin marcar';
+    const color=hora?(pendSet[tipo]?'#92400E':'#166534'):'#767676';
+    html+='<div class="opcion-item"><span>'+c.ico+' '+c.txt+'</span><span class="val" style="color:'+color+'">'+(hora?hora.substring(0,5)+' · '+estado:estado)+'</span></div>';
+  });
+  cont.innerHTML=html;
 }
 
+// ── OPCIONES ──
+function renderOpciones(){
+  document.getElementById('op-nombre').textContent=sesion?sesion.nombre:'--';
+  document.getElementById('op-id').textContent=sesion?sesion.id:'--';
+  document.getElementById('op-dni').textContent=sesion&&sesion.dni?sesion.dni:'—';
+  const img=document.getElementById('ref-foto');
+  if(sesion&&sesion.fotoRef){var m=String(sesion.fotoRef).match(/[-\w]{25,}/);if(m){img.src='https://drive.google.com/thumbnail?id='+m[0]+'&sz=w300';img.style.display='block';}else img.style.display='none';}else img.style.display='none';
+  actualizarSyncAviso();
+}
+
+function cerrarSesion(){
+  sesion=null;clearInterval(cronoInterval);
+  cronoSegundos=0;cronoEstado='inactivo';horasMarcadas={};
+  document.getElementById('crono-wrap').style.display='none';
+  document.getElementById('cronometro').textContent='00:00:00';
+  try{localStorage.removeItem('rappi_sesion');}catch(e){}
+  document.querySelectorAll('.paso').forEach(p=>{p.classList.remove('hecho');p.querySelector('.p-hora').textContent='';});
+  cambiarTab('marcar');
+  mostrarPantalla('p-login');
+}
+
+function fechaHoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+async function api(payload){const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});return r.json();}
 let toastTimer=null;
-function mostrarToast(msg,tipo){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className='visible '+(tipo||'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>{t.className='';},4500);
-}
+function mostrarToast(msg,tipo){const t=document.getElementById('toast');t.textContent=msg;t.className='visible '+(tipo||'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='';},4500);}
 </script>
 </body>
 </html>
