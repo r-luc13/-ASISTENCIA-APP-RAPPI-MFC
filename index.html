@@ -179,6 +179,10 @@
       <div class="info"><div class="nombre-user" id="user-nombre">--</div><div class="id-user" id="user-id">--</div></div>
     </div>
 
+    <div id="banner-pendiente" style="display:none;align-items:center;gap:10px;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#92400E;">
+      <span style="font-size:20px;">⏳</span>
+      <div><div>Cuenta pendiente de autorización</div><div style="font-size:11px;font-weight:400;margin-top:2px;">El administrador debe agregarte al horario. Mientras tanto no puedes marcar.</div></div>
+    </div>
     <div class="sync-aviso" id="sync-aviso">
       <span class="sync-spin">⟳</span>
       <span id="sync-texto">1 marca pendiente de sincronizar</span>
@@ -329,7 +333,7 @@ document.getElementById('btn-login').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Verificando…';limpiarMensajes();
   try{
     const res=await api({accion:'login',gmail,pin});
-    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||''};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',autorizado:res.autorizado!==false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
     else mostrarMsg('login-msg',res.error,'error');
   }catch(e){mostrarMsg('login-msg','Error de conexión.','error');}
   finally{btn.disabled=false;btn.textContent='Ingresar';}
@@ -377,6 +381,17 @@ async function cargarEstadoHoy(){
 
 // ── ACTUALIZAR UI: botón dinámico + progreso ──
 function actualizarUI(){
+  // Banner pendiente
+  var bPend=document.getElementById('banner-pendiente');
+  if(bPend){
+    if(sesion&&sesion.autorizado===false){
+      bPend.style.display='flex';
+      document.getElementById('btn-accion').style.opacity='0.4';
+    }else{
+      bPend.style.display='none';
+      document.getElementById('btn-accion').style.opacity='1';
+    }
+  }
   // marcar pasos hechos
   FLUJO.forEach(tipo=>{
     const pasoEl=document.querySelector('.paso[data-paso="'+tipo+'"]');
@@ -404,6 +419,10 @@ function actualizarUI(){
 
 // ── BOTÓN DE ACCIÓN ──
 document.getElementById('btn-accion').addEventListener('click',()=>{
+    if(sesion && sesion.autorizado===false){
+      mostrarToast('Tu cuenta está pendiente de autorización. Contacta al administrador.','error');
+      return;
+    }
   if(!sesion)return;
   const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
   if(!siguiente)return;
@@ -460,7 +479,7 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
-        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:''};
+        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:'',autorizado:res.autorizado!==false};
         localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
         cerrarModal();modoRegistroFoto=false;regTemp=null;
         aplicarSesion();mostrarPantalla('p-app');
