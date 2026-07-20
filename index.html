@@ -227,6 +227,7 @@
       <img class="ref-foto" id="ref-foto" alt="Foto de referencia">
       <div class="ref-titulo">Foto de referencia</div>
       <div class="ref-sub">Registrada al crear tu cuenta</div>
+      <button id="btn-actualizar-foto" class="btn btn-primario" style="display:none;margin-top:12px;" onclick="actualizarFotoReferencia()">📷 Tomar foto de referencia</button>
     </div>
     <div class="opcion-item"><span>Nombre</span><span class="val" id="op-nombre">--</span></div>
     <div class="opcion-item"><span>ID</span><span class="val" id="op-id">--</span></div>
@@ -502,6 +503,20 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
   // Registro de foto de referencia
   if(modoRegistroFoto){
     estado.textContent='Creando tu cuenta…';
+    // Si ya tiene sesión = está actualizando su foto de referencia
+    if(sesion && sesion.id && !regTemp){
+      try{
+        const res=await api({accion:'actualizar_foto',id:sesion.id,fotoRef:fotoBase64});
+        cerrarModal();modoRegistroFoto=false;
+        if(res.ok){
+          sesion.fotoRef=res.fotoRef||'';
+          localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
+          mostrarToast('✓ Foto de referencia actualizada','exito');
+          renderOpciones();
+        }else mostrarToast(res.error||'No se pudo actualizar.','error');
+      }catch(e){cerrarModal();mostrarToast('Error de conexión.','error');}
+      return;
+    }
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
@@ -601,8 +616,24 @@ function renderOpciones(){
   document.getElementById('op-id').textContent=sesion?sesion.id:'--';
   document.getElementById('op-dni').textContent=sesion&&sesion.dni?sesion.dni:'—';
   const img=document.getElementById('ref-foto');
-  if(sesion&&sesion.fotoRef){var m=String(sesion.fotoRef).match(/[-\w]{25,}/);if(m){img.src='https://drive.google.com/thumbnail?id='+m[0]+'&sz=w300';img.style.display='block';}else img.style.display='none';}else img.style.display='none';
+  const btnFoto=document.getElementById('btn-actualizar-foto');
+  if(sesion&&sesion.fotoRef&&sesion.fotoRef!==''){
+    var m=String(sesion.fotoRef).match(/[-\w]{25,}/);
+    if(m){img.src='https://drive.google.com/thumbnail?id='+m[0]+'&sz=w300';img.style.display='block';}
+    else img.style.display='none';
+    if(btnFoto) btnFoto.style.display='none';
+  }else{
+    img.style.display='none';
+    if(btnFoto) btnFoto.style.display='block';
+  }
   actualizarSyncAviso();
+}
+
+function actualizarFotoReferencia(){
+  modoRegistroFoto=true;
+  document.getElementById('modal-titulo').textContent='Nueva foto de referencia — mira directo a la cámara';
+  abrirModal();
+  iniciarCamara();
 }
 
 function cerrarSesion(){
