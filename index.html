@@ -346,7 +346,7 @@ function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);el.textCon
 function togglePin(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'👁':'🙈';}
 
 // ── SESIÓN GUARDADA ──
-try{const s=JSON.parse(localStorage.getItem('rappi_sesion')||'null');if(s&&s.id&&s.nombre){sesion=s;aplicarSesion();mostrarPantalla('p-app');cargarEstadoHoy();procesarCola();}}catch(e){}
+try{const s=JSON.parse(localStorage.getItem('rappi_sesion')||'null');if(s&&s.id&&s.nombre){sesion=s;if(sesion.autorizado===false)sesion.autorizado=true;aplicarSesion();actualizarUI();mostrarPantalla('p-app');cargarEstadoHoy();procesarCola();}}catch(e){}
 
 // ── LOGIN ──
 document.getElementById('btn-login').addEventListener('click',async()=>{
@@ -393,9 +393,22 @@ async function cargarEstadoHoy(){
   if(!sesion)return;
   try{
     const res=await api({accion:'estado_hoy',id:sesion.id,fecha:fechaHoy()});
-    if(res.ok&&res.marcaciones){
+    if(res.ok){
+      // Refrescar SIEMPRE los datos que vienen del servidor
+      if(res.turnoHoy!==undefined) sesion.turnoHoy = res.turnoHoy || '';
+      if(res.dni) sesion.dni = res.dni;
+      if(res.fotoRef!==undefined) sesion.fotoRef = res.fotoRef || '';
+      sesion.autorizado = true;
+      try{ localStorage.setItem('rappi_sesion',JSON.stringify(sesion)); }catch(e){}
+      aplicarSesion();
+
       horasMarcadas={};
-      Object.keys(res.marcaciones).forEach(t=>{const h=res.marcaciones[t];if(h&&h!=='undefined'&&String(h).trim()!=='')horasMarcadas[t]=h;});
+      if(res.marcaciones){
+        Object.keys(res.marcaciones).forEach(t=>{
+          const h=res.marcaciones[t];
+          if(h&&h!=='undefined'&&String(h).trim()!=='') horasMarcadas[t]=h;
+        });
+      }
       actualizarUI();
       reconstruirCrono();
     }
@@ -520,7 +533,7 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
-        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:'',autorizado:true,turnoHoy:'',tieneHorario:res.tieneHorario||false};
+        sesion={id:res.id,nombre:res.nombre,dni:res.dni||regTemp.dni,fotoRef:res.fotoRef||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};
         localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
         cerrarModal();modoRegistroFoto=false;regTemp=null;
         aplicarSesion();mostrarPantalla('p-app');
