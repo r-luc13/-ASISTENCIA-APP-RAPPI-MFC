@@ -241,7 +241,22 @@
 <div id="modal">
   <div class="modal-chip">Rappi MFC</div>
   <div id="modal-titulo">Selfie de marcación</div>
-  <div class="marco"><video id="video" autoplay playsinline muted></video><canvas id="canvas" style="display:none"></canvas></div>
+  <div class="marco">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas" style="display:none"></canvas>
+    <div class="guia-rostro" id="guia-rostro">
+      <svg viewBox="0 0 200 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Óvalo guía de rostro -->
+        <ellipse cx="100" cy="120" rx="72" ry="95" stroke="white" stroke-width="2.5" stroke-dasharray="8 5"/>
+        <!-- Esquinas de encuadre -->
+        <path d="M20 40 L20 20 L40 20" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <path d="M160 20 L180 20 L180 40" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <path d="M20 220 L20 240 L40 240" stroke="white" stroke-width="3" stroke-linecap="round"/>
+        <path d="M160 240 L180 240 L180 220" stroke="white" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="guia-texto" id="guia-texto">Centra tu rostro en el óvalo</div>
+    </div>
+  </div>
   <div class="modal-acciones">
     <button class="b-s" id="btn-cancelar">Cancelar</button>
     <button class="b-p" id="btn-capturar">Tomar foto</button>
@@ -449,6 +464,10 @@ function abrirModal(){
   fotoBase64=null;
   document.getElementById('video').style.display='block';
   document.getElementById('canvas').style.display='none';
+  var gr3=document.getElementById('guia-rostro'); if(gr3) gr3.style.display='flex';
+  var gt=document.getElementById('guia-texto');
+  if(gt) gt.textContent=modoRegistroFoto?'Foto de referencia — mira directo a la cámara':'Centra tu rostro en el óvalo';
+  var gr2=document.getElementById('guia-rostro'); if(gr2) gr2.style.display='flex';
   document.getElementById('btn-capturar').style.display='inline-block';
   document.getElementById('btn-confirmar').style.display='none';
   document.getElementById('btn-repetir').style.display='none';
