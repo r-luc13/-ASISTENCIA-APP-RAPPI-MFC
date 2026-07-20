@@ -178,6 +178,13 @@
       <div class="avatar" id="avatar-iniciales">--</div>
       <div class="info"><div class="nombre-user" id="user-nombre">--</div><div class="id-user" id="user-id">--</div></div>
     </div>
+    <div id="tarjeta-turno" style="background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">📅</span>
+      <div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gris);">Turno de hoy</div>
+        <div id="turno-hoy" style="font-size:15px;font-weight:700;color:var(--dark);margin-top:2px;">Cargando...</div>
+      </div>
+    </div>
 
     <div id="banner-pendiente" style="display:none;align-items:center;gap:10px;background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:#92400E;">
       <span style="font-size:20px;">⏳</span>
@@ -333,7 +340,7 @@ document.getElementById('btn-login').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Verificando…';limpiarMensajes();
   try{
     const res=await api({accion:'login',gmail,pin});
-    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',autorizado:res.autorizado!==false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
     else mostrarMsg('login-msg',res.error,'error');
   }catch(e){mostrarMsg('login-msg','Error de conexión.','error');}
   finally{btn.disabled=false;btn.textContent='Ingresar';}
@@ -360,7 +367,7 @@ document.getElementById('btn-registro').addEventListener('click',()=>{
 function aplicarSesion(){
   if(!sesion)return;
   document.getElementById('user-nombre').textContent=sesion.nombre;
-  document.getElementById('user-id').textContent=sesion.id;
+  document.getElementById('user-id').textContent=sesion.id+' · DNI: '+(sesion.dni||'—');
   const ini=sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
   document.getElementById('avatar-iniciales').textContent=ini;
 }
@@ -381,16 +388,20 @@ async function cargarEstadoHoy(){
 
 // ── ACTUALIZAR UI: botón dinámico + progreso ──
 function actualizarUI(){
-  // Banner pendiente
+  // Ocultar banner pendiente (ya no bloqueamos)
   var bPend=document.getElementById('banner-pendiente');
-  if(bPend){
-    if(sesion&&sesion.autorizado===false){
-      bPend.style.display='flex';
-      document.getElementById('btn-accion').style.opacity='0.4';
-    }else{
-      bPend.style.display='none';
-      document.getElementById('btn-accion').style.opacity='1';
-    }
+  if(bPend) bPend.style.display='none';
+  document.getElementById('btn-accion').style.opacity='1';
+  // Mostrar turno de hoy
+  var turnoEl=document.getElementById('turno-hoy');
+  if(turnoEl){
+    var t=sesion&&sesion.turnoHoy?sesion.turnoHoy:'';
+    var tUp=t.toUpperCase();
+    if(!t||t===''){turnoEl.textContent='Turno no planificado';turnoEl.style.color='var(--gris)';}
+    else if(tUp==='OFF'){turnoEl.textContent='🔵 Día libre (OFF)';turnoEl.style.color='var(--azul)';}
+    else if(tUp==='VACACIONES'){turnoEl.textContent='🟣 Vacaciones';turnoEl.style.color='#7C3AED';}
+    else if(tUp==='FALTA'){turnoEl.textContent='🔴 Falta programada';turnoEl.style.color='var(--rojo)';}
+    else{turnoEl.textContent='🟢 '+t;turnoEl.style.color='var(--verde)';}
   }
   // marcar pasos hechos
   FLUJO.forEach(tipo=>{
@@ -419,10 +430,6 @@ function actualizarUI(){
 
 // ── BOTÓN DE ACCIÓN ──
 document.getElementById('btn-accion').addEventListener('click',()=>{
-    if(sesion && sesion.autorizado===false){
-      mostrarToast('Tu cuenta está pendiente de autorización. Contacta al administrador.','error');
-      return;
-    }
   if(!sesion)return;
   const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
   if(!siguiente)return;
@@ -479,7 +486,7 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
-        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:'',autorizado:res.autorizado!==false};
+        sesion={id:res.id,nombre:res.nombre,dni:regTemp.dni,fotoRef:'',autorizado:true,turnoHoy:'',tieneHorario:res.tieneHorario||false};
         localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
         cerrarModal();modoRegistroFoto=false;regTemp=null;
         aplicarSesion();mostrarPantalla('p-app');
