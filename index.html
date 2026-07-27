@@ -398,6 +398,8 @@ async function cargarEstadoHoy(){
       if(res.turnoHoy!==undefined) sesion.turnoHoy = res.turnoHoy || '';
       if(res.dni) sesion.dni = res.dni;
       if(res.fotoRef!==undefined) sesion.fotoRef = res.fotoRef || '';
+      sesion.jornadaNocturna = !!res.jornadaNocturna;
+      sesion.fechaJornada = res.fechaJornada || '';
       sesion.autorizado = true;
       try{ localStorage.setItem('rappi_sesion',JSON.stringify(sesion)); }catch(e){}
       aplicarSesion();
@@ -426,7 +428,11 @@ function actualizarUI(){
   if(turnoEl){
     var t=sesion&&sesion.turnoHoy?sesion.turnoHoy:'';
     var tUp=t.toUpperCase();
-    if(!t||t===''){turnoEl.textContent='Turno no planificado';turnoEl.style.color='var(--gris)';}
+    if(sesion&&sesion.jornadaNocturna){
+      turnoEl.textContent='🌙 '+(t||'Turno nocturno')+' — jornada del '+(sesion.fechaJornada||'ayer');
+      turnoEl.style.color='#7C3AED';
+    }
+    else if(!t||t===''){turnoEl.textContent='Turno no planificado';turnoEl.style.color='var(--gris)';}
     else if(tUp==='OFF'){turnoEl.textContent='🔵 Día libre (OFF)';turnoEl.style.color='var(--azul)';}
     else if(tUp==='VACACIONES'){turnoEl.textContent='🟣 Vacaciones';turnoEl.style.color='#7C3AED';}
     else if(tUp==='FALTA'){turnoEl.textContent='🔴 Falta programada';turnoEl.style.color='var(--rojo)';}
