@@ -164,6 +164,22 @@
   </div>
 </div>
 
+
+<!-- NUEVA CONTRASEÑA (tras reseteo del admin) -->
+<div class="pantalla" id="p-nuevapass">
+  <div class="contenido">
+    <div style="background:#FEF3C7;border:1.5px solid #F59E0B;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13px;font-weight:600;color:#92400E;">
+      🔑 Tu contraseña fue reiniciada por el administrador. Crea una nueva para continuar.
+    </div>
+    <div class="campo"><label>Correo Gmail</label><input id="np-gmail" type="email" placeholder="tunombre@gmail.com" inputmode="email"></div>
+    <div class="campo"><label>Nueva contraseña</label><div class="pin-wrap"><input id="np-pin" type="password" placeholder="Mínimo 8 caracteres"><button class="pin-toggle" onclick="togglePin('np-pin',this)" type="button">👁</button></div></div>
+    <div class="campo"><label>Confirma la contraseña</label><div class="pin-wrap"><input id="np-pin2" type="password" placeholder="Repite la contraseña"><button class="pin-toggle" onclick="togglePin('np-pin2',this)" type="button">👁</button></div></div>
+    <div id="np-msg" class="msg"></div>
+    <button class="btn btn-primario" id="btn-nuevapass">Guardar contraseña</button>
+    <button class="btn btn-secundario" onclick="mostrarPantalla('p-login')">Volver</button>
+  </div>
+</div>
+
 <!-- APP PRINCIPAL -->
 <div class="pantalla" id="p-app">
   <div class="tabs">
@@ -357,6 +373,10 @@ document.getElementById('btn-login').addEventListener('click',async()=>{
   try{
     const res=await api({accion:'login',gmail,pin});
     if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    else if(res.requiereNuevaPass){
+      document.getElementById('np-gmail').value=gmail;
+      mostrarPantalla('p-nuevapass');
+    }
     else mostrarMsg('login-msg',res.error,'error');
   }catch(e){mostrarMsg('login-msg','Error de conexión.','error');}
   finally{btn.disabled=false;btn.textContent='Ingresar';}
@@ -378,6 +398,30 @@ document.getElementById('btn-registro').addEventListener('click',()=>{
   document.getElementById('modal-titulo').textContent='Foto de referencia — mira a la cámara';
   abrirModal();
   iniciarCamara();
+});
+
+
+// ── DEFINIR CONTRASEÑA NUEVA (tras reseteo del admin) ──
+document.getElementById('btn-nuevapass').addEventListener('click',async()=>{
+  const gmail=document.getElementById('np-gmail').value.trim().toLowerCase();
+  const p1=document.getElementById('np-pin').value.trim();
+  const p2=document.getElementById('np-pin2').value.trim();
+  if(!gmail||!p1||!p2){mostrarMsg('np-msg','Completa todos los campos.','error');return;}
+  if(p1.length<8){mostrarMsg('np-msg','La contraseña debe tener mínimo 8 caracteres.','error');return;}
+  if(p1!==p2){mostrarMsg('np-msg','Las contraseñas no coinciden.','error');return;}
+  const btn=document.getElementById('btn-nuevapass');
+  btn.disabled=true;btn.textContent='Guardando…';
+  try{
+    const res=await api({accion:'definir_pass',gmail,pin:p1});
+    if(res.ok){
+      sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',
+              autorizado:true,turnoHoy:res.turnoHoy||''};
+      localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
+      aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');
+      mostrarToast('✓ Contraseña actualizada','exito');
+    }else mostrarMsg('np-msg',res.error,'error');
+  }catch(e){mostrarMsg('np-msg','Error de conexión.','error');}
+  finally{btn.disabled=false;btn.textContent='Guardar contraseña';}
 });
 
 function aplicarSesion(){
@@ -569,6 +613,8 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
   // 1) Guardar YA en la UI y en cola local (nunca se pierde)
   horasMarcadas[tipoActual]=marca.hora;
   encolarMarca(marca);
+  // La foto solo vive en memoria para el primer intento; si falla, la marca
+  // se conserva sin foto para no llenar el almacenamiento del telefono.
   actualizarUI();
   reconstruirCrono();
   cerrarModal();
@@ -582,18 +628,59 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
 // ── COLA DE SINCRONIZACIÓN ──
 function claveCola(){return 'rappi_cola_'+(sesion?sesion.id:'anon');}
 function leerCola(){try{return JSON.parse(localStorage.getItem(claveCola())||'[]');}catch(e){return [];}}
-function guardarCola(c){try{localStorage.setItem(claveCola(),JSON.stringify(c));}catch(e){}}
-function encolarMarca(m){const c=leerCola();c.push(m);guardarCola(c);actualizarSyncAviso();}
+function guardarCola(c){
+  try{
+    localStorage.setItem(claveCola(),JSON.stringify(c));
+  }catch(e){
+    // Almacenamiento lleno: conservar solo las 20 marcas mas recientes
+    try{
+      const recortada=c.slice(-20);
+      localStorage.setItem(claveCola(),JSON.stringify(recortada));
+      mostrarToast('Espacio limitado: se conservaron las ultimas 20 marcas.','error');
+    }catch(e2){ console.error('No se pudo guardar la cola',e2); }
+  }
+}
+function encolarMarca(m){
+  const c=leerCola();
+  // Guardar SIN la foto: base64 pesa ~50KB y llena el almacenamiento del navegador
+  const {foto, ...sinFoto} = m;
+  sinFoto.sinFoto = !!foto;   // recordar que hubo foto, aunque no se guarde
+  c.push(sinFoto);
+  guardarCola(c);
+  fotosEnMemoria[m._localId]=foto||null;   // la foto vive solo en esta sesion
+  actualizarSyncAviso();
+}
+// Fotos pendientes de subir en esta sesion (no persisten al cerrar la app)
+let fotosEnMemoria={};
 
 async function procesarCola(){
   const cola=leerCola();
   if(cola.length===0){actualizarSyncAviso();return;}
   const pendientes=[];
   for(const marca of cola){
+    // #9 no reintentar para siempre: maximo 20 intentos (~10 minutos)
+    marca.intentos=(marca.intentos||0)+1;
+    if(marca.intentos>20){
+      console.warn('Marca descartada tras 20 intentos',marca);
+      mostrarToast('Una marca no se pudo sincronizar. Avisa al administrador.','error');
+      continue;
+    }
     try{
-      const res=await api({accion:'marcar',id:marca.id,nombre:marca.nombre,tipo:marca.tipo,fecha:marca.fecha,hora:marca.hora,lat:marca.lat,lng:marca.lng,foto:marca.foto});
-      if(!res.ok && !res.duplicado){pendientes.push(marca);} // falló: reintentar luego
-    }catch(e){pendientes.push(marca);} // sin conexión: reintentar luego
+      const fotoMarca=fotosEnMemoria[marca._localId]||null;
+      const res=await api({accion:'marcar',id:marca.id,nombre:marca.nombre,tipo:marca.tipo,
+                           fecha:marca.fecha,hora:marca.hora,lat:marca.lat,lng:marca.lng,foto:fotoMarca});
+      if(res.ok||res.duplicado){
+        delete fotosEnMemoria[marca._localId];   // liberar memoria
+      }else{
+        // Error de datos (no de red): no tiene sentido reintentar eternamente
+        if(marca.intentos>=3){
+          console.warn('Marca rechazada por el servidor',res.error);
+          delete fotosEnMemoria[marca._localId];
+          continue;
+        }
+        pendientes.push(marca);
+      }
+    }catch(e){pendientes.push(marca);}   // sin conexion: reintentar luego
   }
   guardarCola(pendientes);
   actualizarSyncAviso();
