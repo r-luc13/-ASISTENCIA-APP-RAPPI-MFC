@@ -653,49 +653,93 @@ function encolarMarca(m){
 // Fotos pendientes de subir en esta sesion (no persisten al cerrar la app)
 let fotosEnMemoria={};
 
+let sincronizando=false;   // evita que dos sincronizaciones corran a la vez
+
 async function procesarCola(){
+  if(sincronizando) return;              // ya hay una en curso
   const cola=leerCola();
   if(cola.length===0){actualizarSyncAviso();return;}
-  const pendientes=[];
-  for(const marca of cola){
-    // #9 no reintentar para siempre: maximo 20 intentos (~10 minutos)
-    marca.intentos=(marca.intentos||0)+1;
-    if(marca.intentos>20){
-      console.warn('Marca descartada tras 20 intentos',marca);
-      mostrarToast('Una marca no se pudo sincronizar. Avisa al administrador.','error');
-      continue;
-    }
-    try{
-      const fotoMarca=fotosEnMemoria[marca._localId]||null;
-      const res=await api({accion:'marcar',id:marca.id,nombre:marca.nombre,tipo:marca.tipo,
-                           fecha:marca.fecha,hora:marca.hora,lat:marca.lat,lng:marca.lng,foto:fotoMarca});
-      if(res.ok||res.duplicado){
-        delete fotosEnMemoria[marca._localId];   // liberar memoria
-      }else{
-        // Error de datos (no de red): no tiene sentido reintentar eternamente
-        if(marca.intentos>=3){
-          console.warn('Marca rechazada por el servidor',res.error);
-          delete fotosEnMemoria[marca._localId];
-          continue;
-        }
-        pendientes.push(marca);
+
+  sincronizando=true;
+  try{
+    const TAM_LOTE=15;                   // 15 marcas por peticion
+    let restantes=[...cola];
+    let enviadas=0;
+
+    while(restantes.length>0){
+      const lote=restantes.slice(0,TAM_LOTE);
+      // Adjuntar la foto solo si sigue en memoria de esta sesion
+      const paquete=lote.map(m=>({
+        _localId:m._localId, id:m.id, nombre:m.nombre, tipo:m.tipo,
+        fecha:m.fecha, hora:m.hora, lat:m.lat, lng:m.lng,
+        foto: fotosEnMemoria[m._localId]||null
+      }));
+
+      actualizarSyncAviso(enviadas, cola.length);
+
+      let res;
+      try{
+        res=await api({accion:'marcar_lote', marcas:paquete});
+      }catch(e){
+        break;                            // sin conexion: se conservan las restantes
       }
-    }catch(e){pendientes.push(marca);}   // sin conexion: reintentar luego
+
+      if(!res||!res.ok){ break; }         // error del servidor: reintentar luego
+
+      // Quitar de la cola las que se procesaron bien
+      const okIds={}, permIds={};
+      (res.resultados||[]).forEach(r=>{
+        if(r.ok) okIds[r.localId]=true;
+        else if(r.permanente) permIds[r.localId]=true;
+      });
+
+      restantes=restantes.filter(m=>{
+        if(okIds[m._localId]||permIds[m._localId]){
+          delete fotosEnMemoria[m._localId];
+          return false;
+        }
+        m.intentos=(m.intentos||0)+1;
+        return m.intentos<=20;            // descartar tras 20 intentos
+      });
+
+      enviadas+=lote.length;
+      guardarCola(restantes);             // guardar avance despues de cada lote
+    }
+
+    guardarCola(restantes);
+    if(restantes.length===0 && cola.length>0){
+      mostrarToast('✓ '+cola.length+' marcas sincronizadas','exito');
+    }
+  } finally {
+    sincronizando=false;
+    actualizarSyncAviso();
   }
-  guardarCola(pendientes);
-  actualizarSyncAviso();
 }
 
-function actualizarSyncAviso(){
+function actualizarSyncAviso(hechas, total){
   const n=leerCola().length;
   const aviso=document.getElementById('sync-aviso');
   const opPend=document.getElementById('op-pend');
   if(opPend)opPend.textContent=n;
-  if(n>0){aviso.classList.add('visible');document.getElementById('sync-texto').textContent=n+(n===1?' marca pendiente de sincronizar':' marcas pendientes de sincronizar');}
-  else aviso.classList.remove('visible');
+  if(n>0){
+    aviso.classList.add('visible');
+    let txt = n+(n===1?' marca pendiente de sincronizar':' marcas pendientes de sincronizar');
+    if(sincronizando && total){ txt='Sincronizando… '+Math.min(hechas||0,total)+' de '+total; }
+    else if(sincronizando){ txt='Sincronizando… quedan '+n; }
+    document.getElementById('sync-texto').textContent=txt;
+  } else aviso.classList.remove('visible');
 }
 
-function sincronizarAhora(){mostrarToast('Sincronizando…','');procesarCola().then(()=>{const n=leerCola().length;mostrarToast(n===0?'✓ Todo sincronizado':n+' marcas aún pendientes',n===0?'exito':'error');});}
+function sincronizarAhora(){
+  if(sincronizando){mostrarToast('Ya se esta sincronizando…','');return;}
+  const n=leerCola().length;
+  if(n===0){mostrarToast('✓ No hay marcas pendientes','exito');return;}
+  mostrarToast('Sincronizando '+n+' marcas… manten la app abierta','');
+  procesarCola().then(()=>{
+    const q=leerCola().length;
+    mostrarToast(q===0?'✓ Todo sincronizado':q+' marcas aun pendientes', q===0?'exito':'error');
+  });
+}
 
 // Reintento automático cada 30s y al recuperar conexión
 setInterval(()=>{if(sesion&&leerCola().length>0)procesarCola();},30000);
