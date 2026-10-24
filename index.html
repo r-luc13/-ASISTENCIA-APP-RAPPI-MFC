@@ -110,6 +110,14 @@
   .b-p{background:var(--naranja);color:#fff;}
   .b-s{background:transparent;color:rgba(255,255,255,0.7);border:1.5px solid rgba(255,255,255,0.2)!important;}
   #estado-envio{color:rgba(255,255,255,0.6);margin-top:10px;font-size:14px;min-height:20px;text-align:center;}
+  /* Bloqueo por permisos faltantes */
+  #bloqueo-permiso{position:fixed;inset:0;background:rgba(10,10,10,0.9);display:none;
+    align-items:center;justify-content:center;padding:24px;z-index:70;}
+  .bloqueo-card{background:var(--card);border-radius:18px;padding:24px 20px;max-width:360px;width:100%;text-align:center;}
+  .bloqueo-ico{font-size:40px;margin-bottom:10px;}
+  .bloqueo-titulo{font-size:18px;font-weight:800;color:var(--rojo);margin-bottom:10px;}
+  .bloqueo-detalle{font-size:14px;color:var(--dark);line-height:1.6;white-space:pre-line;text-align:left;
+    background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px;}
   #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--dark);color:#fff;padding:13px 20px;border-radius:14px;font-size:14px;font-weight:600;max-width:88vw;text-align:center;opacity:0;pointer-events:none;transition:opacity 0.22s,transform 0.22s;z-index:60;box-shadow:0 4px 20px rgba(0,0,0,0.25);}
   #toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}
   #toast.error{background:var(--rojo);}
@@ -228,7 +236,7 @@
       <div class="paso" data-paso="salida_turno"><div class="p-ico">■</div><div class="p-nombre">Salida turno</div><div class="p-hora"></div></div>
     </div>
 
-    <p class="nota-pie">Cada marca registra selfie, ubicación GPS y hora exacta.<br>Si no hay señal, la marca se guarda y se sincroniza sola después.</p>
+    <p class="nota-pie">Toda marca necesita <b>foto y ubicación GPS</b>.<br>Si no hay señal, la marca se guarda completa y se sincroniza sola después.</p>
   </div>
 
   <!-- TAB HISTORIAL -->
@@ -248,6 +256,7 @@
     <div class="opcion-item"><span>Nombre</span><span class="val" id="op-nombre">--</span></div>
     <div class="opcion-item"><span>ID</span><span class="val" id="op-id">--</span></div>
     <div class="opcion-item"><span>DNI</span><span class="val" id="op-dni">--</span></div>
+    <div class="opcion-item"><span>Tipo de personal</span><span class="val" id="op-tipo">--</span></div>
     <div class="opcion-item" id="op-sync"><span>Marcas pendientes</span><span class="val" id="op-pend">0</span></div>
     <button class="btn btn-secundario" onclick="sincronizarAhora()">Sincronizar ahora</button>
     <button class="btn btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
@@ -281,6 +290,17 @@
     <button class="b-s" id="btn-repetir" style="display:none">Repetir</button>
   </div>
   <div id="estado-envio"></div>
+</div>
+
+<!-- BLOQUEO POR PERMISOS -->
+<div id="bloqueo-permiso">
+  <div class="bloqueo-card">
+    <div class="bloqueo-ico">🚫</div>
+    <div class="bloqueo-titulo" id="bloqueo-titulo">No se puede marcar</div>
+    <div class="bloqueo-detalle" id="bloqueo-detalle"></div>
+    <button class="btn btn-primario" onclick="cerrarBloqueo()">Entendido</button>
+    <button class="btn btn-secundario" onclick="location.reload()">Recargar la página</button>
+  </div>
 </div>
 
 <div id="toast"></div>
@@ -372,7 +392,7 @@ document.getElementById('btn-login').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Verificando…';limpiarMensajes();
   try{
     const res=await api({accion:'login',gmail,pin});
-    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
     else if(res.requiereNuevaPass){
       document.getElementById('np-gmail').value=gmail;
       mostrarPantalla('p-nuevapass');
@@ -427,7 +447,7 @@ document.getElementById('btn-nuevapass').addEventListener('click',async()=>{
 function aplicarSesion(){
   if(!sesion)return;
   document.getElementById('user-nombre').textContent=sesion.nombre;
-  document.getElementById('user-id').textContent=sesion.id+' · DNI: '+(sesion.dni||'—');
+  document.getElementById('user-id').textContent=sesion.id+' · DNI: '+(sesion.dni||'—')+(sesion.tipoPersonal?' · '+sesion.tipoPersonal:'');
   const ini=sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
   document.getElementById('avatar-iniciales').textContent=ini;
 }
@@ -436,14 +456,22 @@ function aplicarSesion(){
 async function cargarEstadoHoy(){
   if(!sesion)return;
   try{
-    const res=await api({accion:'estado_hoy',id:sesion.id,fecha:fechaHoy()});
+    const res=await api({accion:'estado_hoy',id:sesion.id,fecha:fechaJornada(),fechaJornada:fechaJornada()});
     if(res.ok){
       // Refrescar SIEMPRE los datos que vienen del servidor
       if(res.turnoHoy!==undefined) sesion.turnoHoy = res.turnoHoy || '';
       if(res.dni) sesion.dni = res.dni;
       if(res.fotoRef!==undefined) sesion.fotoRef = res.fotoRef || '';
+      if(res.tipoPersonal) sesion.tipoPersonal = res.tipoPersonal;
       sesion.jornadaNocturna = !!res.jornadaNocturna;
       sesion.fechaJornada = res.fechaJornada || '';
+      // Si el servidor detecta una jornada abierta de otro dia y el telefono
+      // no la tiene (reinstalo, cambio de equipo), se restaura aqui.
+      if(res.jornadaNocturna && res.fechaJornada && !leerJornada()){
+        abrirJornada(res.fechaJornada, res.marcaciones && res.marcaciones.ingreso_turno || '');
+      }
+      // Si el servidor ya ve la salida marcada, la jornada se cierra
+      if(res.marcaciones && res.marcaciones.salida_turno) cerrarJornada();
       sesion.autorizado = true;
       try{ localStorage.setItem('rappi_sesion',JSON.stringify(sesion)); }catch(e){}
       aplicarSesion();
@@ -472,8 +500,13 @@ function actualizarUI(){
   if(turnoEl){
     var t=sesion&&sesion.turnoHoy?sesion.turnoHoy:'';
     var tUp=t.toUpperCase();
-    if(sesion&&sesion.jornadaNocturna){
-      turnoEl.textContent='🌙 '+(t||'Turno nocturno')+' — jornada del '+(sesion.fechaJornada||'ayer');
+    var jLocal=leerJornada();
+    var amanecida = esAmanecida() || (sesion&&sesion.jornadaNocturna);
+    if(amanecida){
+      var fj=(jLocal&&jLocal.fecha)||(sesion&&sesion.fechaJornada)||'ayer';
+      turnoEl.innerHTML='🌙 '+(t||'Turno nocturno')+
+        '<div style="font-size:12px;font-weight:600;color:#7C3AED;margin-top:2px">'+
+        'Sigues en la jornada del '+formatoDia(fj)+' — no vuelvas a marcar entrada</div>';
       turnoEl.style.color='#7C3AED';
     }
     else if(!t||t===''){turnoEl.textContent='Turno no planificado';turnoEl.style.color='var(--gris)';}
@@ -507,11 +540,74 @@ function actualizarUI(){
   }
 }
 
+// ── PERMISOS OBLIGATORIOS ──
+// La marca solo vale si tiene GPS Y foto. Se pide la ubicacion ANTES de
+// abrir la camara para no hacer perder el tiempo al colaborador.
+let ubicacionActual = null;
+
+function pedirUbicacion(){
+  return new Promise((resolve,reject)=>{
+    if(!navigator.geolocation){ reject({codigo:'NO_SOPORTA'}); return; }
+    navigator.geolocation.getCurrentPosition(
+      p=>resolve({lat:p.coords.latitude.toFixed(6), lng:p.coords.longitude.toFixed(6), precision:Math.round(p.coords.accuracy||0)}),
+      e=>reject({codigo:e.code===1?'DENEGADO':(e.code===3?'TIMEOUT':'NO_DISPONIBLE')}),
+      {enableHighAccuracy:true, timeout:15000, maximumAge:0}
+    );
+  });
+}
+
+function mensajePermisoGPS(codigo){
+  if(codigo==='DENEGADO'){
+    return 'Bloqueaste el acceso a tu ubicación.\n\nPara marcar debes permitirla:\n'+
+           '1. Toca el candado 🔒 junto a la dirección web\n'+
+           '2. Entra a "Permisos"\n'+
+           '3. Activa "Ubicación"\n'+
+           '4. Recarga la página y vuelve a marcar';
+  }
+  if(codigo==='TIMEOUT'){
+    return 'No se pudo obtener tu ubicación a tiempo.\n\nSal a un lugar con mejor señal GPS '+
+           '(cerca de una puerta o ventana) y vuelve a intentar.';
+  }
+  if(codigo==='NO_SOPORTA'){
+    return 'Este navegador no soporta ubicación. Usa Chrome.';
+  }
+  return 'El GPS está apagado.\n\nActiva la ubicación de tu celular y vuelve a marcar.';
+}
+
+function mostrarBloqueo(titulo, detalle){
+  const b=document.getElementById('bloqueo-permiso');
+  document.getElementById('bloqueo-titulo').textContent=titulo;
+  document.getElementById('bloqueo-detalle').textContent=detalle;
+  b.style.display='flex';
+}
+function cerrarBloqueo(){ document.getElementById('bloqueo-permiso').style.display='none'; }
+
 // ── BOTÓN DE ACCIÓN ──
-document.getElementById('btn-accion').addEventListener('click',()=>{
+document.getElementById('btn-accion').addEventListener('click',async()=>{
   if(!sesion)return;
   const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
   if(!siguiente)return;
+
+  const btn=document.getElementById('btn-accion');
+  const textoPrevio=document.getElementById('accion-texto').textContent;
+  btn.style.pointerEvents='none';
+  document.getElementById('accion-texto').textContent='Obteniendo ubicación…';
+
+  // 1) GPS obligatorio ANTES de la camara
+  try{
+    ubicacionActual=await pedirUbicacion();
+  }catch(err){
+    ubicacionActual=null;
+    btn.style.pointerEvents='';
+    document.getElementById('accion-texto').textContent=textoPrevio;
+    mostrarBloqueo('No se puede marcar sin ubicación', mensajePermisoGPS(err.codigo));
+    return;
+  }
+
+  btn.style.pointerEvents='';
+  document.getElementById('accion-texto').textContent=textoPrevio;
+
+  // 2) Camara obligatoria
   tipoActual=siguiente;
   modoRegistroFoto=false;
   document.getElementById('modal-titulo').textContent=CONFIG[siguiente].txt;
@@ -521,8 +617,20 @@ document.getElementById('btn-accion').addEventListener('click',()=>{
 
 // ── CÁMARA ──
 async function iniciarCamara(){
-  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}},audio:false});document.getElementById('video').srcObject=stream;}
-  catch(e){cerrarModal();mostrarToast('No se pudo abrir la cámara. Revisa permisos.','error');}
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:720}},audio:false});
+    document.getElementById('video').srcObject=stream;
+  }catch(e){
+    cerrarModal();
+    var det = (e && (e.name==='NotAllowedError'||e.name==='PermissionDeniedError'))
+      ? 'Bloqueaste el acceso a la cámara.\n\nPara marcar debes permitirlo:\n'+
+        '1. Toca el candado 🔒 junto a la dirección web\n'+
+        '2. Entra a "Permisos"\n'+
+        '3. Activa "Cámara"\n'+
+        '4. Recarga la página y vuelve a marcar'
+      : 'No se pudo abrir la cámara. Cierra otras apps que la estén usando y vuelve a intentar.';
+    mostrarBloqueo('No se puede marcar sin foto', det);
+  }
 }
 function abrirModal(){
   fotoBase64=null;
@@ -544,9 +652,11 @@ document.getElementById('btn-cancelar').addEventListener('click',()=>{cerrarModa
 
 document.getElementById('btn-capturar').addEventListener('click',()=>{
   const v=document.getElementById('video'),c=document.getElementById('canvas');
-  const e=Math.min(1,640/v.videoWidth);c.width=v.videoWidth*e;c.height=v.videoHeight*e;
+  // 420px / calidad 0.58 => ~22KB: suficiente para reconocer el rostro y
+  // lo bastante liviano para guardarse en el telefono hasta que sincronice.
+  const e=Math.min(1,420/v.videoWidth);c.width=v.videoWidth*e;c.height=v.videoHeight*e;
   c.getContext('2d').drawImage(v,0,0,c.width,c.height);
-  fotoBase64=c.toDataURL('image/jpeg',0.72).split(',')[1];
+  fotoBase64=c.toDataURL('image/jpeg',0.58).split(',')[1];
   v.style.display='none';c.style.display='block';
   document.getElementById('btn-capturar').style.display='none';
   document.getElementById('btn-confirmar').style.display='inline-block';
@@ -583,7 +693,7 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
-        sesion={id:res.id,nombre:res.nombre,dni:res.dni||regTemp.dni,fotoRef:res.fotoRef||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};
+        sesion={id:res.id,nombre:res.nombre,dni:res.dni||regTemp.dni,fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};
         localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
         cerrarModal();modoRegistroFoto=false;regTemp=null;
         aplicarSesion();mostrarPantalla('p-app');
@@ -594,39 +704,86 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     return;
   }
 
-  // Marcación normal — CONGELAR hora y ubicación AHORA
-  estado.textContent='Obteniendo ubicación…';
-  let lat='',lng='';
-  try{
-    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000}));
-    lat=pos.coords.latitude.toFixed(6);lng=pos.coords.longitude.toFixed(6);
-  }catch(e){/* seguimos sin ubicación, no perdemos la marca */}
+  // Marcación normal — la ubicación ya se obtuvo antes de abrir la cámara.
+  // Si por lo que sea no está, se vuelve a pedir; sin ella NO se marca.
+  estado.textContent='Verificando ubicación…';
+  let lat='', lng='';
+  if(ubicacionActual && ubicacionActual.lat && ubicacionActual.lng){
+    lat=ubicacionActual.lat; lng=ubicacionActual.lng;
+  }else{
+    try{
+      const u=await pedirUbicacion();
+      lat=u.lat; lng=u.lng;
+    }catch(err){
+      cerrarModal();
+      mostrarBloqueo('No se puede marcar sin ubicación', mensajePermisoGPS(err.codigo));
+      btnC.disabled=false;
+      return;
+    }
+  }
+  if(!fotoBase64){
+    cerrarModal();
+    mostrarBloqueo('No se puede marcar sin foto','Vuelve a intentar y toma la foto antes de confirmar.');
+    btnC.disabled=false;
+    return;
+  }
 
   const ahora=new Date();
+  const horaMarca=ahora.toLocaleTimeString('es-PE',{hour12:false});
+
+  // La entrada ABRE la jornada con el dia de hoy. Las demas marcas usan
+  // la jornada ya abierta, aunque el calendario haya cambiado de dia.
+  if(tipoActual==='ingreso_turno') abrirJornada(fechaHoy(), horaMarca);
+  const fechaDeLaMarca = fechaJornada();
+
   const marca={
     id:sesion.id, nombre:sesion.nombre, tipo:tipoActual,
-    fecha:fechaHoy(), hora:ahora.toLocaleTimeString('es-PE',{hour12:false}),
+    fecha:fechaDeLaMarca, hora:horaMarca,
+    fechaJornada:fechaDeLaMarca,   // el servidor no tiene que adivinar
     lat, lng, foto:fotoBase64,
     _localId: Date.now()+'_'+Math.random().toString(36).slice(2,7)
   };
 
-  // 1) Guardar YA en la UI y en cola local (nunca se pierde)
+  // La salida de turno CIERRA la jornada
+  if(tipoActual==='salida_turno') cerrarJornada();
+
+  // Guardar YA en la UI y en la cola local CON la foto incluida
   horasMarcadas[tipoActual]=marca.hora;
   encolarMarca(marca);
-  // La foto solo vive en memoria para el primer intento; si falla, la marca
-  // se conserva sin foto para no llenar el almacenamiento del telefono.
+  registrarEnHistorial(marca);
+  ubicacionActual=null;
   actualizarUI();
   reconstruirCrono();
   cerrarModal();
   mostrarToast('✓ '+CONFIG[tipoActual].txt+' registrada a las '+marca.hora.substring(0,5),'exito');
   btnC.disabled=false;
 
-  // 2) Intentar subir en segundo plano
   procesarCola();
 });
 
 // ── COLA DE SINCRONIZACIÓN ──
 function claveCola(){return 'rappi_cola_'+(sesion?sesion.id:'anon');}
+function claveHist(){return 'rappi_hist_'+(sesion?sesion.id:'anon');}
+
+// ── HISTORIAL LOCAL: guarda TODA marca hecha desde este telefono,
+//    sincronice o no. Es la prueba de "yo si marque".
+function leerHistorial(){try{return JSON.parse(localStorage.getItem(claveHist())||'[]');}catch(e){return [];}}
+function guardarHistorial(h){
+  try{ localStorage.setItem(claveHist(),JSON.stringify(h.slice(-120))); }catch(e){}
+}
+function registrarEnHistorial(m){
+  const h=leerHistorial();
+  h.push({ localId:m._localId, tipo:m.tipo, fecha:m.fecha, hora:m.hora,
+           gps:!!(m.lat&&m.lng), foto:!!m.foto, estado:'pendiente', detalle:'' });
+  guardarHistorial(h);
+}
+function marcarHistorial(localId, estado, detalle){
+  const h=leerHistorial();
+  for(let i=h.length-1;i>=0;i--){
+    if(h[i].localId===localId){ h[i].estado=estado; h[i].detalle=detalle||''; break; }
+  }
+  guardarHistorial(h);
+}
 function leerCola(){try{return JSON.parse(localStorage.getItem(claveCola())||'[]');}catch(e){return [];}}
 function guardarCola(c){
   try{
@@ -642,78 +799,83 @@ function guardarCola(c){
 }
 function encolarMarca(m){
   const c=leerCola();
-  // Guardar SIN la foto: base64 pesa ~50KB y llena el almacenamiento del navegador
-  const {foto, ...sinFoto} = m;
-  sinFoto.sinFoto = !!foto;   // recordar que hubo foto, aunque no se guarde
-  c.push(sinFoto);
+  // La foto SE GUARDA con la marca (~22KB). Asi, si el colaborador cierra
+  // la app antes de sincronizar, la marca sube despues CON su foto.
+  c.push(m);
   guardarCola(c);
-  fotosEnMemoria[m._localId]=foto||null;   // la foto vive solo en esta sesion
   actualizarSyncAviso();
 }
-// Fotos pendientes de subir en esta sesion (no persisten al cerrar la app)
-let fotosEnMemoria={};
 
 let sincronizando=false;   // evita que dos sincronizaciones corran a la vez
 
 async function procesarCola(){
-  if(sincronizando) return;              // ya hay una en curso
+  if(sincronizando) return;
   const cola=leerCola();
   if(cola.length===0){actualizarSyncAviso();return;}
 
   sincronizando=true;
   try{
-    const TAM_LOTE=15;                   // 15 marcas por peticion
+    const TAM_LOTE=10;
     let restantes=[...cola];
     let enviadas=0;
 
     while(restantes.length>0){
       const lote=restantes.slice(0,TAM_LOTE);
-      // Adjuntar la foto solo si sigue en memoria de esta sesion
-      const paquete=lote.map(m=>({
-        _localId:m._localId, id:m.id, nombre:m.nombre, tipo:m.tipo,
-        fecha:m.fecha, hora:m.hora, lat:m.lat, lng:m.lng,
-        foto: fotosEnMemoria[m._localId]||null
-      }));
-
       actualizarSyncAviso(enviadas, cola.length);
 
       let res;
       try{
-        res=await api({accion:'marcar_lote', marcas:paquete});
-      }catch(e){
-        break;                            // sin conexion: se conservan las restantes
-      }
+        res=await api({accion:'marcar_lote', marcas:lote});
+      }catch(e){ break; }          // sin conexion: se conservan todas
+      if(!res||!res.ok){ break; }  // error del servidor: reintentar luego
 
-      if(!res||!res.ok){ break; }         // error del servidor: reintentar luego
-
-      // Quitar de la cola las que se procesaron bien
-      const okIds={}, permIds={};
+      const okIds={}, rechIds={};
       (res.resultados||[]).forEach(r=>{
         if(r.ok) okIds[r.localId]=true;
-        else if(r.permanente) permIds[r.localId]=true;
+        else if(r.permanente) rechIds[r.localId]={error:r.error};
       });
 
       restantes=restantes.filter(m=>{
-        if(okIds[m._localId]||permIds[m._localId]){
-          delete fotosEnMemoria[m._localId];
+        if(okIds[m._localId]){ marcarHistorial(m._localId,'sincronizada'); return false; }
+        if(rechIds[m._localId]){
+          // Rechazo permanente: NO se borra en silencio, queda como fallida
+          marcarHistorial(m._localId,'rechazada', rechIds[m._localId].error);
+          avisarFallo(m, rechIds[m._localId].error);
           return false;
         }
         m.intentos=(m.intentos||0)+1;
-        return m.intentos<=20;            // descartar tras 20 intentos
+        if(m.intentos>40){
+          // Tras muchos intentos se saca de la cola pero NO desaparece:
+          // queda marcada como fallida y se avisa al servidor.
+          marcarHistorial(m._localId,'fallida','No se pudo subir tras 40 intentos');
+          avisarFallo(m,'No se pudo subir tras 40 intentos');
+          return false;
+        }
+        return true;
       });
 
       enviadas+=lote.length;
-      guardarCola(restantes);             // guardar avance despues de cada lote
+      guardarCola(restantes);
     }
 
     guardarCola(restantes);
     if(restantes.length===0 && cola.length>0){
-      mostrarToast('✓ '+cola.length+' marcas sincronizadas','exito');
+      mostrarToast('✓ '+cola.length+' marca'+(cola.length===1?'':'s')+' sincronizada'+(cola.length===1?'':'s'),'exito');
     }
   } finally {
     sincronizando=false;
     actualizarSyncAviso();
   }
+}
+
+/** Avisa al servidor que una marca no pudo subir, para que quede rastro */
+function avisarFallo(m, motivo){
+  try{
+    api({accion:'reportar_fallo', id:m.id, nombre:m.nombre, tipo:m.tipo,
+         fecha:m.fecha, hora:m.hora, lat:m.lat, lng:m.lng,
+         teniaFoto:!!m.foto, motivo:motivo});
+  }catch(e){}
+  mostrarToast('Una marca no se pudo registrar. Avisa a tu supervisor.','error');
 }
 
 function actualizarSyncAviso(hechas, total){
@@ -731,13 +893,14 @@ function actualizarSyncAviso(hechas, total){
 }
 
 function sincronizarAhora(){
-  if(sincronizando){mostrarToast('Ya se esta sincronizando…','');return;}
+  if(sincronizando){mostrarToast('Ya se está sincronizando…','');return;}
   const n=leerCola().length;
   if(n===0){mostrarToast('✓ No hay marcas pendientes','exito');return;}
-  mostrarToast('Sincronizando '+n+' marcas… manten la app abierta','');
+  mostrarToast('Sincronizando '+n+' marcas… mantén la app abierta','');
   procesarCola().then(()=>{
     const q=leerCola().length;
-    mostrarToast(q===0?'✓ Todo sincronizado':q+' marcas aun pendientes', q===0?'exito':'error');
+    mostrarToast(q===0?'✓ Todo sincronizado':q+' marcas aún pendientes', q===0?'exito':'error');
+    renderHistorial();
   });
 }
 
@@ -745,18 +908,60 @@ function sincronizarAhora(){
 setInterval(()=>{if(sesion&&leerCola().length>0)procesarCola();},30000);
 window.addEventListener('online',()=>{if(sesion)procesarCola();});
 
+// Al volver a la app (o al cruzar medianoche) se revalida el estado contra
+// el servidor, para que la pantalla no se "formatee" sola a las 00:00.
+let diaVisto = fechaHoy();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && sesion){ cargarEstadoHoy(); procesarCola(); }
+});
+setInterval(()=>{
+  const hoy=fechaHoy();
+  if(hoy!==diaVisto){ diaVisto=hoy; if(sesion) cargarEstadoHoy(); }
+}, 60000);
+
 // ── HISTORIAL ──
 function renderHistorial(){
   const cont=document.getElementById('historial-lista');
   const cola=leerCola();
-  const pendSet={};cola.forEach(m=>pendSet[m.tipo]=true);
-  let html='';
+  const pendSet={}; cola.forEach(m=>pendSet[m.tipo]=true);
+  const hist=leerHistorial();
+  const hoy=fechaJornada();
+
+  let html='<div class="paso-label" style="margin-bottom:10px">Marcas de hoy</div>';
   FLUJO.forEach(tipo=>{
-    const c=CONFIG[tipo];const hora=horasMarcadas[tipo];
-    const estado=hora?(pendSet[tipo]?'⟳ pendiente':'✓ sincronizada'):'— sin marcar';
+    const c=CONFIG[tipo]; const hora=horasMarcadas[tipo];
+    const estado=hora?(pendSet[tipo]?'⟳ pendiente de subir':'✓ sincronizada'):'— sin marcar';
     const color=hora?(pendSet[tipo]?'#92400E':'#166534'):'#767676';
     html+='<div class="opcion-item"><span>'+c.ico+' '+c.txt+'</span><span class="val" style="color:'+color+'">'+(hora?hora.substring(0,5)+' · '+estado:estado)+'</span></div>';
   });
+
+  // Marcas que NO llegaron al servidor: nunca se ocultan
+  const fallidas=hist.filter(x=>x.estado==='fallida'||x.estado==='rechazada');
+  if(fallidas.length){
+    html+='<div class="paso-label" style="margin:18px 0 10px;color:var(--rojo)">No registradas — avisa a tu supervisor</div>';
+    fallidas.slice(-10).reverse().forEach(x=>{
+      const et=(CONFIG[x.tipo]?CONFIG[x.tipo].txt:x.tipo);
+      html+='<div class="opcion-item" style="border-color:#FCA5A5;background:#FEF2F2">'+
+            '<span>'+et+'<br><span style="font-size:11px;font-weight:400;color:var(--gris)">'+x.fecha+' '+String(x.hora).substring(0,5)+'</span></span>'+
+            '<span class="val" style="color:#991B1B;text-align:right;max-width:46%">'+(x.detalle||'No se pudo registrar')+'</span></div>';
+    });
+  }
+
+  // Registro completo de lo marcado desde este telefono
+  const recientes=hist.slice(-25).reverse();
+  if(recientes.length){
+    html+='<div class="paso-label" style="margin:18px 0 10px">Todo lo que marcaste desde este celular</div>';
+    recientes.forEach(x=>{
+      const et=(CONFIG[x.tipo]?CONFIG[x.tipo].txt:x.tipo);
+      let col='#166534', txt='✓ sincronizada';
+      if(x.estado==='pendiente'){col='#92400E';txt='⟳ pendiente';}
+      if(x.estado==='fallida'||x.estado==='rechazada'){col='#991B1B';txt='✕ no registrada';}
+      html+='<div class="opcion-item"><span style="font-size:13px">'+et+
+            '<br><span style="font-size:11px;font-weight:400;color:var(--gris)">'+x.fecha+' '+String(x.hora).substring(0,5)+'</span></span>'+
+            '<span class="val" style="color:'+col+'">'+txt+'</span></div>';
+    });
+  }
+
   cont.innerHTML=html;
 }
 
@@ -765,6 +970,8 @@ function renderOpciones(){
   document.getElementById('op-nombre').textContent=sesion?sesion.nombre:'--';
   document.getElementById('op-id').textContent=sesion?sesion.id:'--';
   document.getElementById('op-dni').textContent=sesion&&sesion.dni?sesion.dni:'—';
+  var opTipo=document.getElementById('op-tipo');
+  if(opTipo) opTipo.textContent=sesion&&sesion.tipoPersonal?sesion.tipoPersonal:'—';
   const img=document.getElementById('ref-foto');
   const btnFoto=document.getElementById('btn-actualizar-foto');
   if(sesion&&sesion.fotoRef&&sesion.fotoRef!==''){
@@ -791,13 +998,53 @@ function cerrarSesion(){
   cronoSegundos=0;cronoEstado='inactivo';horasMarcadas={};
   document.getElementById('crono-wrap').style.display='none';
   document.getElementById('cronometro').textContent='00:00:00';
+  cerrarJornada();
   try{localStorage.removeItem('rappi_sesion');}catch(e){}
   document.querySelectorAll('.paso').forEach(p=>{p.classList.remove('hecho');p.querySelector('.p-hora').textContent='';});
   cambiarTab('marcar');
   mostrarPantalla('p-login');
 }
 
+function formatoDia(f){
+  var p=String(f).split('-');
+  return p.length===3 ? (p[2]+'/'+p[1]) : String(f);
+}
 function fechaHoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+/* ══════════════ JORNADA ACTIVA (turnos amanecida) ══════════════
+   Para un turno 22:00-07:00 la unidad no es el dia del calendario sino
+   la JORNADA. Al marcar entrada se abre la jornada con la fecha de ese
+   dia; todas las marcas siguientes van a esa misma jornada aunque sean
+   de madrugada. Se cierra al marcar salida de turno.
+   Limite de seguridad: 20 horas. Pasado eso se considera abandonada.  */
+const MAX_JORNADA_MS = 20*3600*1000;
+
+function claveJornada(){ return 'rappi_jornada_'+(sesion?sesion.id:'anon'); }
+
+function leerJornada(){
+  try{
+    const j=JSON.parse(localStorage.getItem(claveJornada())||'null');
+    if(!j||!j.fecha) return null;
+    if(Date.now()-(j.ts||0) > MAX_JORNADA_MS){ cerrarJornada(); return null; }
+    return j;
+  }catch(e){ return null; }
+}
+function abrirJornada(fecha,hora){
+  try{ localStorage.setItem(claveJornada(),JSON.stringify({fecha:fecha,hora:hora,ts:Date.now()})); }catch(e){}
+}
+function cerrarJornada(){
+  try{ localStorage.removeItem(claveJornada()); }catch(e){}
+}
+/** Fecha a la que pertenece la marca: la jornada abierta, o el dia de hoy */
+function fechaJornada(){
+  const j=leerJornada();
+  return (j && j.fecha) ? j.fecha : fechaHoy();
+}
+/** true si la jornada abierta corresponde a un dia anterior (amanecida) */
+function esAmanecida(){
+  const j=leerJornada();
+  return !!(j && j.fecha && j.fecha !== fechaHoy());
+}
 async function api(payload){const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});return r.json();}
 let toastTimer=null;
 function mostrarToast(msg,tipo){const t=document.getElementById('toast');t.textContent=msg;t.className='visible '+(tipo||'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='';},4500);}
