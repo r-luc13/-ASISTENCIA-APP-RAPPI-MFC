@@ -27,7 +27,7 @@
   .pantalla.activa{display:flex;}
   .contenido{padding:20px;max-width:440px;width:100%;margin:0 auto;flex:1;}
   .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);}
-  .tab{flex:1;padding:13px;text-align:center;font-size:12px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent;}
+  .tab{flex:1;padding:13px 6px;text-align:center;font-size:11px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:var(--gris);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;}
   .tab.activo{color:var(--naranja);border-bottom-color:var(--naranja);}
   .campo{margin-bottom:16px;}
   .campo label{display:block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris);margin-bottom:7px;}
@@ -73,7 +73,8 @@
 
   /* progreso de las 4 marcas */
   .progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
-  .paso{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;}
+  .paso{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;font-family:'Inter',sans-serif;-webkit-tap-highlight-color:transparent;min-height:66px;}
+  .paso:active{transform:scale(0.97);}
   .paso.hecho{border-color:var(--verde);background:#F0FDF4;}
   .paso .p-ico{font-size:16px;margin-bottom:4px;}
   .paso .p-nombre{font-size:9px;font-weight:700;color:var(--gris);text-transform:uppercase;letter-spacing:0.02em;line-height:1.2;}
@@ -88,6 +89,54 @@
 
   .nota-pie{font-size:12px;color:var(--gris);text-align:center;line-height:1.6;}
   .msg{font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;margin-bottom:14px;display:none;}
+
+  /* ── Mi horario y Equipo ── */
+  .sem-nav{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .sem-btn{width:40px;height:40px;flex:0 0 auto;border:1.5px solid var(--line);background:var(--card);border-radius:10px;font-size:20px;font-weight:700;color:var(--dark);cursor:pointer;line-height:1;}
+  .sem-btn:disabled{opacity:.35;cursor:default;}
+  .sem-rango{flex:1 1 auto;text-align:center;font-size:13px;font-weight:700;color:var(--dark);}
+
+  .dia-card{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .dia-card.hoy{border-color:var(--naranja);background:var(--naranja-light);}
+  .dia-fecha{flex:0 0 52px;text-align:center;}
+  .dia-nom{font-size:10px;font-weight:800;letter-spacing:0.06em;color:var(--gris);text-transform:uppercase;}
+  .dia-num{font-size:19px;font-weight:800;color:var(--dark);line-height:1.1;}
+  .dia-cuerpo{flex:1 1 auto;min-width:0;}
+  .dia-turno{font-size:15px;font-weight:700;color:var(--dark);}
+  .dia-turno.libre{color:var(--gris);font-weight:600;}
+  .dia-marcas{font-size:12px;font-weight:500;color:var(--gris);margin-top:2px;}
+  .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;white-space:nowrap;}
+  .pill.ok{background:#DCF3E4;color:#05653A;}
+  .pill.aviso{background:#FFF1CC;color:#7A5200;}
+  .pill.malo{background:#FFDEDE;color:#A11212;}
+  .pill.info{background:#DCE6FF;color:#1B3C92;}
+  .pill.libre{background:#EFEFEF;color:#5A5A5A;}
+
+  .eq-resumen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;}
+  .eq-dato{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
+  .eq-dato .n{font-size:22px;font-weight:800;line-height:1.1;color:var(--dark);}
+  .eq-dato .t{font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--gris);margin-top:3px;}
+  .eq-filtros{display:flex;gap:8px;margin-bottom:12px;}
+  .eq-filtro{flex:1;padding:10px;border:1.5px solid var(--line);background:var(--card);border-radius:10px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:var(--gris);cursor:pointer;}
+  .eq-filtro.activo{border-color:var(--naranja);background:var(--naranja-light);color:var(--naranja);}
+  .eq-card{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .eq-top{display:flex;align-items:flex-start;gap:10px;}
+  .eq-nombre{flex:1 1 auto;min-width:0;font-size:14px;font-weight:700;color:var(--dark);}
+  .eq-sub{font-size:12px;font-weight:500;color:var(--gris);margin-top:3px;}
+  .eq-marcas{font-size:12px;font-weight:600;color:var(--dark);margin-top:5px;}
+  .eq-detalle{font-size:12px;font-weight:500;color:var(--gris);margin-top:6px;line-height:1.4;}
+  .eq-accion{margin-top:10px;width:100%;padding:11px;border:1.5px solid var(--naranja-border);background:var(--naranja-light);color:var(--naranja);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  .vacio{text-align:center;color:var(--gris);font-size:13px;font-weight:600;padding:28px 14px;}
+
+  .modal-nov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:18px;}
+  .modal-nov.abierto{display:flex;}
+  .modal-nov-caja{background:var(--card);border-radius:16px;padding:20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;}
+  .modal-nov-titulo{font-size:17px;font-weight:800;color:var(--dark);}
+  .modal-nov-sub{font-size:13px;font-weight:500;color:var(--gris);margin-top:4px;margin-bottom:16px;}
+  .nov-label{display:block;font-size:11px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:var(--gris);margin-bottom:6px;}
+  .nov-select,.nov-input{width:100%;padding:13px;border:1.5px solid var(--line);border-radius:10px;font-family:'Inter',sans-serif;font-size:15px;color:var(--dark);background:var(--card);margin-bottom:14px;box-sizing:border-box;}
+  .nov-botones{display:flex;gap:10px;}
+  .nov-botones .btn{margin-bottom:0;}
   .msg.error{background:#FEE2E2;color:#991B1B;display:block;}
   .msg.info{background:#DCFCE7;color:#166534;display:block;}
 
@@ -188,10 +237,63 @@
   </div>
 </div>
 
+<!-- MODAL AUTORIZACIÓN DE MARCA FUERA DE ORDEN -->
+<div class="modal-nov" id="modal-aut">
+  <div class="modal-nov-caja">
+    <div class="modal-nov-titulo">Falta una marca anterior</div>
+    <div class="modal-nov-sub">
+      Quieres registrar <b id="aut-quiere">—</b>, pero antes falta:
+      <b id="aut-faltan" style="color:var(--rojo)">—</b>.<br><br>
+      Puedes registrarla igual, pero tienes que decir quién te autoriza.
+    </div>
+    <label class="nov-label" for="aut-sup">¿Quién te autoriza?</label>
+    <select id="aut-sup" class="nov-select"></select>
+    <label class="nov-label" for="aut-motivo">¿Qué pasó?</label>
+    <select id="aut-motivo" class="nov-select">
+      <option value="">Elige un motivo…</option>
+      <option value="Olvidé marcar">Olvidé marcar</option>
+      <option value="No tenía señal">No tenía señal</option>
+      <option value="El celular se apagó o quedó sin batería">El celular se apagó o quedó sin batería</option>
+      <option value="Estaba en otra zona del CD">Estaba en otra zona del CD</option>
+      <option value="La app no me dejó marcar">La app no me dejó marcar</option>
+      <option value="Otro">Otro</option>
+    </select>
+    <input id="aut-detalle" class="nov-input" type="text" maxlength="120" placeholder="Detalle (opcional)">
+    <div class="msg" id="aut-msg"></div>
+    <div class="nov-botones">
+      <button class="btn btn-secundario" onclick="cerrarModalAut()">Cancelar</button>
+      <button class="btn btn-primario" id="aut-btn" onclick="pedirAutorizacion()">Continuar y marcar</button>
+    </div>
+    <p style="font-size:11px;color:var(--gris);margin:12px 0 0;line-height:1.45;">
+      Esta marca queda <b>pendiente de confirmar</b>. Tu supervisor la ve en su
+      app y la confirma. Queda registrado qué faltaba, quién autorizó y el motivo.
+    </p>
+  </div>
+</div>
+
+<!-- MODAL RESOLVER DESCUADRE -->
+<div class="modal-nov" id="modal-nov">
+  <div class="modal-nov-caja">
+    <div class="modal-nov-titulo" id="nov-nombre">--</div>
+    <div class="modal-nov-sub" id="nov-sub">--</div>
+    <label class="nov-label" for="nov-estado">¿Qué pasó ese día?</label>
+    <select id="nov-estado" class="nov-select"></select>
+    <label class="nov-label" for="nov-obs">Observación (opcional)</label>
+    <input id="nov-obs" class="nov-input" type="text" maxlength="120" placeholder="Ej: marcó pero el celular no tenía señal">
+    <div class="msg" id="nov-msg"></div>
+    <div class="nov-botones">
+      <button class="btn btn-secundario" onclick="cerrarModalNovedad()">Cancelar</button>
+      <button class="btn btn-primario" id="nov-guardar" onclick="guardarNovedad()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <!-- APP PRINCIPAL -->
 <div class="pantalla" id="p-app">
   <div class="tabs">
     <div class="tab activo" data-tab="marcar" onclick="cambiarTab('marcar')">Asistencia</div>
+    <div class="tab" data-tab="horario" onclick="cambiarTab('horario')">Mi horario</div>
+    <div class="tab" data-tab="equipo" id="tab-btn-equipo" style="display:none" onclick="cambiarTab('equipo')">Equipo</div>
     <div class="tab" data-tab="historial" onclick="cambiarTab('historial')">Historial</div>
     <div class="tab" data-tab="opciones" onclick="cambiarTab('opciones')">Más</div>
   </div>
@@ -230,13 +332,39 @@
     </button>
 
     <div class="progreso">
-      <div class="paso" data-paso="ingreso_turno"><div class="p-ico">▶</div><div class="p-nombre">Entrada turno</div><div class="p-hora"></div></div>
-      <div class="paso" data-paso="inicio_break"><div class="p-ico">⏸</div><div class="p-nombre">Salida break</div><div class="p-hora"></div></div>
-      <div class="paso" data-paso="fin_break"><div class="p-ico">↩</div><div class="p-nombre">Retorno break</div><div class="p-hora"></div></div>
-      <div class="paso" data-paso="salida_turno"><div class="p-ico">■</div><div class="p-nombre">Salida turno</div><div class="p-hora"></div></div>
+      <button type="button" class="paso" data-paso="ingreso_turno" onclick="tocarPaso('ingreso_turno')"><div class="p-ico">▶</div><div class="p-nombre">Entrada turno</div><div class="p-hora"></div></button>
+      <button type="button" class="paso" data-paso="inicio_break" onclick="tocarPaso('inicio_break')"><div class="p-ico">⏸</div><div class="p-nombre">Salida break</div><div class="p-hora"></div></button>
+      <button type="button" class="paso" data-paso="fin_break" onclick="tocarPaso('fin_break')"><div class="p-ico">↩</div><div class="p-nombre">Retorno break</div><div class="p-hora"></div></button>
+      <button type="button" class="paso" data-paso="salida_turno" onclick="tocarPaso('salida_turno')"><div class="p-ico">■</div><div class="p-nombre">Salida turno</div><div class="p-hora"></div></button>
     </div>
 
-    <p class="nota-pie">Toda marca necesita <b>foto y ubicación GPS</b>.<br>Si no hay señal, la marca se guarda completa y se sincroniza sola después.</p>
+    <p class="nota-pie">Toda marca necesita <b>foto y ubicación GPS</b>.<br>Si no hay señal, la marca se guarda completa y se sincroniza sola después.<br><b>¿Olvidaste una marca?</b> Toca el recuadro que te falta. Tu supervisor la autoriza ahí mismo.</p>
+  </div>
+
+  <!-- TAB MI HORARIO -->
+  <div class="contenido tab-cont" id="tab-horario" style="display:none">
+    <div class="sem-nav">
+      <button class="sem-btn" onclick="moverSemana(-7)" aria-label="Semana anterior">‹</button>
+      <div class="sem-rango" id="sem-rango">Cargando…</div>
+      <button class="sem-btn" onclick="moverSemana(7)" aria-label="Semana siguiente">›</button>
+    </div>
+    <div id="horario-lista"></div>
+    <p class="nota-pie" id="horario-nota">Tu turno sale del horario que carga el supervisor.<br>Si ves un día mal, avísale el mismo día.</p>
+  </div>
+
+  <!-- TAB EQUIPO (solo supervisores) -->
+  <div class="contenido tab-cont" id="tab-equipo" style="display:none">
+    <div class="sem-nav">
+      <button class="sem-btn" onclick="moverDiaEquipo(-1)" aria-label="Día anterior">‹</button>
+      <div class="sem-rango" id="eq-fecha">Cargando…</div>
+      <button class="sem-btn" onclick="moverDiaEquipo(1)" aria-label="Día siguiente">›</button>
+    </div>
+    <div class="eq-resumen" id="eq-resumen"></div>
+    <div class="eq-filtros">
+      <button class="eq-filtro activo" data-filtro="pendientes" onclick="filtrarEquipo('pendientes')">Por revisar</button>
+      <button class="eq-filtro" data-filtro="todos" onclick="filtrarEquipo('todos')">Todos</button>
+    </div>
+    <div id="equipo-lista"></div>
   </div>
 
   <!-- TAB HISTORIAL -->
@@ -325,6 +453,7 @@ let tipoActual = null;
 let regTemp = null; // datos de registro pendientes de foto
 
 let horasMarcadas = {}; // {ingreso_turno:'08:01:00', ...}
+let autTokenActual = null; // {tipo, supervisor, motivo} de una marca fuera de orden
 
 // ── CRONÓMETRO ──
 let cronoSegundos=0, cronoInterval=null, cronoEstado='inactivo';
@@ -376,6 +505,8 @@ function cambiarTab(t){
   document.getElementById('tab-'+t).style.display='block';
   if(t==='historial')renderHistorial();
   if(t==='opciones')renderOpciones();
+  if(t==='horario')cargarMiHorario();
+  if(t==='equipo')cargarEquipo();
 }
 function limpiarMensajes(){document.querySelectorAll('.msg').forEach(m=>{m.className='msg';m.textContent='';});}
 function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);el.textContent=txt;el.className='msg '+tipo;}
@@ -392,7 +523,7 @@ document.getElementById('btn-login').addEventListener('click',async()=>{
   const btn=document.getElementById('btn-login');btn.disabled=true;btn.textContent='Verificando…';limpiarMensajes();
   try{
     const res=await api({accion:'login',gmail,pin});
-    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
+    if(res.ok){sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',gmail:gmail,fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false,rol:res.rol||'COLABORADOR',esSupervisor:!!res.esSupervisor};localStorage.setItem('rappi_sesion',JSON.stringify(sesion));aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');procesarCola();}
     else if(res.requiereNuevaPass){
       document.getElementById('np-gmail').value=gmail;
       mostrarPantalla('p-nuevapass');
@@ -434,8 +565,9 @@ document.getElementById('btn-nuevapass').addEventListener('click',async()=>{
   try{
     const res=await api({accion:'definir_pass',gmail,pin:p1});
     if(res.ok){
-      sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',fotoRef:res.fotoRef||'',
-              autorizado:true,turnoHoy:res.turnoHoy||''};
+      sesion={id:res.id,nombre:res.nombre,dni:res.dni||'',gmail:gmail,fotoRef:res.fotoRef||'',
+              autorizado:true,turnoHoy:res.turnoHoy||'',
+              rol:res.rol||'COLABORADOR',esSupervisor:!!res.esSupervisor};
       localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
       aplicarSesion();await cargarEstadoHoy();mostrarPantalla('p-app');
       mostrarToast('✓ Contraseña actualizada','exito');
@@ -450,6 +582,12 @@ function aplicarSesion(){
   document.getElementById('user-id').textContent=sesion.id+' · DNI: '+(sesion.dni||'—')+(sesion.tipoPersonal?' · '+sesion.tipoPersonal:'');
   const ini=sesion.nombre.split(' ').slice(0,2).map(p=>p[0]).join('').toUpperCase();
   document.getElementById('avatar-iniciales').textContent=ini;
+  const btnEq=document.getElementById('tab-btn-equipo');
+  if(btnEq) btnEq.style.display = sesion.esSupervisor ? 'block' : 'none';
+  if(!sesion.esSupervisor){
+    const cEq=document.getElementById('tab-equipo');
+    if(cEq && cEq.style.display!=='none'){ cambiarTab('marcar'); }
+  }
 }
 
 // ── CARGA ESTADO HOY ──
@@ -463,6 +601,10 @@ async function cargarEstadoHoy(){
       if(res.dni) sesion.dni = res.dni;
       if(res.fotoRef!==undefined) sesion.fotoRef = res.fotoRef || '';
       if(res.tipoPersonal) sesion.tipoPersonal = res.tipoPersonal;
+      if(res.rol) sesion.rol = res.rol;
+      if(res.gmail) sesion.gmail = res.gmail;
+      if(res.supervisores) sesion.supervisores = res.supervisores;
+      sesion.esSupervisor = !!res.esSupervisor;
       sesion.jornadaNocturna = !!res.jornadaNocturna;
       sesion.fechaJornada = res.fechaJornada || '';
       // Si el servidor detecta una jornada abierta de otro dia y el telefono
@@ -583,10 +725,12 @@ function mostrarBloqueo(titulo, detalle){
 function cerrarBloqueo(){ document.getElementById('bloqueo-permiso').style.display='none'; }
 
 // ── BOTÓN DE ACCIÓN ──
-document.getElementById('btn-accion').addEventListener('click',async()=>{
-  if(!sesion)return;
-  const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
-  if(!siguiente)return;
+/**
+ * Arranca la marcacion de un paso: pide GPS, luego camara.
+ * Sirve tanto para el boton grande como para tocar un recuadro de abajo.
+ */
+async function iniciarMarcacion(tipo){
+  if(!sesion || !CONFIG[tipo]) return;
 
   const btn=document.getElementById('btn-accion');
   const textoPrevio=document.getElementById('accion-texto').textContent;
@@ -608,12 +752,85 @@ document.getElementById('btn-accion').addEventListener('click',async()=>{
   document.getElementById('accion-texto').textContent=textoPrevio;
 
   // 2) Camara obligatoria
-  tipoActual=siguiente;
+  tipoActual=tipo;
   modoRegistroFoto=false;
-  document.getElementById('modal-titulo').textContent=CONFIG[siguiente].txt;
+  document.getElementById('modal-titulo').textContent=CONFIG[tipo].txt;
   abrirModal();
   iniciarCamara();
+}
+
+document.getElementById('btn-accion').addEventListener('click',()=>{
+  if(!sesion)return;
+  const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
+  if(!siguiente)return;
+  iniciarMarcacion(siguiente);
 });
+
+/* ── Tocar un recuadro de abajo: permite marcar un paso salteado ── */
+function tocarPaso(tipo){
+  if(!sesion || !CONFIG[tipo]) return;
+
+  if(horasMarcadas[tipo]){
+    mostrarToast(CONFIG[tipo].txt+' ya quedó registrado a las '+String(horasMarcadas[tipo]).substring(0,5),'exito');
+    return;
+  }
+  const siguiente=FLUJO.find(t=>!horasMarcadas[t]);
+  if(tipo===siguiente){ iniciarMarcacion(tipo); return; }
+
+  // Hay pasos anteriores sin marcar: necesita que un supervisor lo autorice
+  const faltan=FLUJO.slice(0,FLUJO.indexOf(tipo)).filter(t=>!horasMarcadas[t]).map(t=>CONFIG[t].txt);
+  abrirModalAut(tipo, faltan);
+}
+
+/* ── Autorización del supervisor para marcar fuera de orden ── */
+let autTipo=null, autFaltan=[];
+
+function abrirModalAut(tipo, faltan){
+  autTipo=tipo; autFaltan=faltan;
+  document.getElementById('aut-quiere').textContent=CONFIG[tipo].txt;
+  document.getElementById('aut-faltan').textContent=faltan.join(' · ');
+
+  const sups=(sesion && sesion.supervisores) ? sesion.supervisores : [];
+  const sel=document.getElementById('aut-sup');
+  sel.innerHTML = sups.length
+    ? '<option value="">Elige a tu supervisor…</option>' +
+      sups.map(s=>'<option value="'+esc(s)+'">'+esc(s)+'</option>').join('')
+    : '<option value="">No hay supervisores cargados</option>';
+
+  document.getElementById('aut-motivo').value='';
+  document.getElementById('aut-detalle').value='';
+  const m=document.getElementById('aut-msg');
+  if(sups.length===0){
+    m.textContent='Todavía no hay supervisores asignados. Avisa al administrador.';
+    m.className='msg error';
+  } else { m.className='msg'; m.textContent=''; }
+  const b=document.getElementById('aut-btn'); b.disabled=false; b.textContent='Continuar y marcar';
+  document.getElementById('modal-aut').classList.add('abierto');
+}
+
+function cerrarModalAut(){
+  document.getElementById('modal-aut').classList.remove('abierto');
+  autTipo=null; autFaltan=[];
+}
+
+/* No pide contraseña: el operario declara quién lo autorizó y por qué.
+   La confirmación real la hace el supervisor después, desde su pestaña Equipo. */
+function pedirAutorizacion(){
+  if(!autTipo) return;
+  const sup=document.getElementById('aut-sup').value;
+  const mot=document.getElementById('aut-motivo').value;
+  const det=document.getElementById('aut-detalle').value.trim();
+  const msg=document.getElementById('aut-msg');
+
+  if(!sup){ msg.textContent='Elige quién te autoriza.'; msg.className='msg error'; return; }
+  if(!mot){ msg.textContent='Elige el motivo.'; msg.className='msg error'; return; }
+  if(mot==='Otro' && !det){ msg.textContent='Si el motivo es "Otro", escribe el detalle.'; msg.className='msg error'; return; }
+
+  autTokenActual={ tipo:autTipo, supervisor:sup, motivo: det ? mot+': '+det : mot };
+  const t=autTipo;
+  cerrarModalAut();
+  iniciarMarcacion(t);
+}
 
 // ── CÁMARA ──
 async function iniciarCamara(){
@@ -693,7 +910,7 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     try{
       const res=await api({accion:'registrar',nombre:regTemp.nombre,dni:regTemp.dni,gmail:regTemp.gmail,pin:regTemp.pin,fotoRef:fotoBase64});
       if(res.ok){
-        sesion={id:res.id,nombre:res.nombre,dni:res.dni||regTemp.dni,fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false};
+        sesion={id:res.id,nombre:res.nombre,dni:res.dni||regTemp.dni,gmail:regTemp.gmail,fotoRef:res.fotoRef||'',tipoPersonal:res.tipoPersonal||'',autorizado:true,turnoHoy:res.turnoHoy||'',tieneHorario:res.tieneHorario||false,rol:res.rol||'COLABORADOR',esSupervisor:!!res.esSupervisor};
         localStorage.setItem('rappi_sesion',JSON.stringify(sesion));
         cerrarModal();modoRegistroFoto=false;regTemp=null;
         aplicarSesion();mostrarPantalla('p-app');
@@ -743,6 +960,13 @@ document.getElementById('btn-confirmar').addEventListener('click',async()=>{
     lat, lng, foto:fotoBase64,
     _localId: Date.now()+'_'+Math.random().toString(36).slice(2,7)
   };
+
+  // Marca fuera de orden: va con quién autorizó y por qué.
+  if(autTokenActual && autTokenActual.tipo===tipoActual){
+    marca.autNombre=autTokenActual.supervisor;
+    marca.autMotivo=autTokenActual.motivo;
+    autTokenActual=null;
+  }
 
   // La salida de turno CIERRA la jornada
   if(tipoActual==='salida_turno') cerrarJornada();
@@ -1045,6 +1269,260 @@ function esAmanecida(){
   const j=leerJornada();
   return !!(j && j.fecha && j.fecha !== fechaHoy());
 }
+/* ═══════════════ MI HORARIO ═══════════════ */
+let semanaBase = null;
+let equipoFecha = null;
+let equipoDatos = [];
+let equipoEstados = [];
+let equipoFiltro = 'pendientes';
+let novTarget = null;
+
+function esc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function sumarDiasLocal(f, n){
+  const p = String(f).split('-');
+  const d = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10));
+  d.setDate(d.getDate() + n);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+/* Como se ve cada estado en pantalla */
+const PILLS = {
+  'COMPLETO':          {c:'ok',    t:'Completo'},
+  'EN TURNO':          {c:'info',  t:'En turno'},
+  'SIN SALIDA':        {c:'aviso', t:'Sin salida'},
+  'SIN MARCA':         {c:'malo',  t:'No marcaste'},
+  'PENDIENTE':         {c:'aviso', t:'Pendiente'},
+  'PROGRAMADO':        {c:'info',  t:'Programado'},
+  'OFF':               {c:'libre', t:'Descanso'},
+  'ASISTIÓ':           {c:'ok',    t:'Asistió'},
+  'FALTA':             {c:'malo',  t:'Falta'},
+  'FALTA JUSTIFICADA': {c:'aviso', t:'Falta justif.'},
+  'PERMISO':           {c:'aviso', t:'Permiso'},
+  'DESCANSO MÉDICO':   {c:'info',  t:'Descanso médico'},
+  'VACACIONES':        {c:'info',  t:'Vacaciones'},
+  'LUTO':              {c:'info',  t:'Luto'},
+  'SIN TURNO':         {c:'aviso', t:'Sin turno'},
+  'BREAK INCOMPLETO':  {c:'aviso', t:'Break a medias'},
+  'FUERA DE ORDEN':    {c:'malo',  t:'Falta confirmar'},
+  'RESUELTO':          {c:'info',  t:'Resuelto'}
+};
+function pillDe(estado){
+  return PILLS[String(estado||'').toUpperCase()] || {c:'libre', t:estado || '—'};
+}
+
+function moverSemana(dias){
+  semanaBase = sumarDiasLocal(semanaBase || fechaHoy(), dias);
+  cargarMiHorario();
+}
+
+async function cargarMiHorario(){
+  if(!sesion) return;
+  const cont = document.getElementById('horario-lista');
+  document.getElementById('sem-rango').textContent = 'Cargando…';
+  cont.innerHTML = '<div class="vacio">Cargando tu horario…</div>';
+  try{
+    const res = await api({accion:'mi_horario', id:sesion.id, semana: semanaBase || fechaHoy()});
+    if(!res.ok){
+      document.getElementById('sem-rango').textContent = '—';
+      cont.innerHTML = '<div class="vacio">'+esc(res.error||'No se pudo cargar tu horario.')+'</div>';
+      return;
+    }
+    semanaBase = res.lunes;
+    renderMiHorario(res);
+  }catch(e){
+    document.getElementById('sem-rango').textContent = '—';
+    cont.innerHTML = '<div class="vacio">Sin conexión.<br>Conéctate a internet y vuelve a abrir esta pestaña.</div>';
+  }
+}
+
+function renderMiHorario(res){
+  document.getElementById('sem-rango').textContent = res.rango || '';
+  const cont = document.getElementById('horario-lista');
+  let html = '', conTurno = 0;
+
+  res.dias.forEach(d => {
+    const p = pillDe(d.estado);
+    const dd = String(d.fecha).split('-')[2];
+    const libre = (!d.turno || String(d.turno).toUpperCase() === 'OFF');
+    if(!libre) conTurno++;
+
+    let marcas = '';
+    if(d.entrada && d.salida)      marcas = 'Marcaste ' + esc(d.entrada) + ' → ' + esc(d.salida);
+    else if(d.entrada)             marcas = 'Entrada ' + esc(d.entrada) + ' · falta la salida';
+    else if(d.obs)                 marcas = esc(d.obs);
+
+    html +=
+      '<div class="dia-card'+(d.esHoy ? ' hoy' : '')+'">' +
+        '<div class="dia-fecha"><div class="dia-nom">'+esc(String(d.dia).substring(0,3))+'</div>' +
+        '<div class="dia-num">'+esc(dd)+'</div></div>' +
+        '<div class="dia-cuerpo">' +
+          '<div class="dia-turno'+(libre ? ' libre' : '')+'">'+esc(libre ? 'Descanso' : d.turno)+'</div>' +
+          (marcas ? '<div class="dia-marcas">'+marcas+'</div>' : '') +
+        '</div>' +
+        '<span class="pill '+p.c+'">'+esc(p.t)+'</span>' +
+      '</div>';
+  });
+
+  cont.innerHTML = html;
+  document.getElementById('horario-nota').innerHTML = conTurno === 0
+    ? 'Esta semana no tienes turnos cargados.<br>Si crees que es un error, avisa a tu supervisor.'
+    : 'Tu turno sale del horario que carga el supervisor.<br>Si ves un día mal, avísale el mismo día.';
+}
+
+/* ═══════════════ PANEL DE EQUIPO (supervisores) ═══════════════ */
+
+function moverDiaEquipo(dias){
+  equipoFecha = sumarDiasLocal(equipoFecha || fechaHoy(), dias);
+  cargarEquipo();
+}
+
+function filtrarEquipo(f){
+  equipoFiltro = f;
+  document.querySelectorAll('.eq-filtro').forEach(b =>
+    b.classList.toggle('activo', b.dataset.filtro === f));
+  renderEquipo();
+}
+
+async function cargarEquipo(){
+  if(!sesion) return;
+  const cont = document.getElementById('equipo-lista');
+  document.getElementById('eq-fecha').textContent = 'Cargando…';
+  cont.innerHTML = '<div class="vacio">Cargando al equipo…</div>';
+  try{
+    const res = await api({accion:'panel_supervisor', id:sesion.id, gmail:sesion.gmail,
+                           fecha: equipoFecha || fechaHoy()});
+    if(!res.ok){
+      document.getElementById('eq-fecha').textContent = '—';
+      document.getElementById('eq-resumen').innerHTML = '';
+      cont.innerHTML = '<div class="vacio">'+esc(res.error||'No se pudo cargar.')+'</div>';
+      return;
+    }
+    equipoFecha = res.fecha;
+    equipoDatos = res.filas || [];
+    equipoEstados = res.estados || [];
+    document.getElementById('eq-fecha').textContent = res.fechaTexto || res.fecha;
+    const r = res.resumen || {};
+    document.getElementById('eq-resumen').innerHTML =
+      '<div class="eq-dato"><div class="n" style="color:var(--rojo)">'+(r.pendientes||0)+'</div><div class="t">Por revisar</div></div>' +
+      '<div class="eq-dato"><div class="n" style="color:var(--verde)">'+(r.ok||0)+'</div><div class="t">Sin problema</div></div>' +
+      '<div class="eq-dato"><div class="n" style="color:var(--azul)">'+(r.resueltos||0)+'</div><div class="t">Resueltos</div></div>';
+    renderEquipo();
+  }catch(e){
+    document.getElementById('eq-fecha').textContent = '—';
+    document.getElementById('eq-resumen').innerHTML = '';
+    cont.innerHTML = '<div class="vacio">Sin conexión.<br>Conéctate a internet e intenta de nuevo.</div>';
+  }
+}
+
+function renderEquipo(){
+  const cont = document.getElementById('equipo-lista');
+  const lista = equipoFiltro === 'pendientes'
+    ? equipoDatos.filter(f => f.estado !== 'OK' && f.estado !== 'RESUELTO')
+    : equipoDatos;
+
+  if(lista.length === 0){
+    cont.innerHTML = '<div class="vacio">' +
+      (equipoFiltro === 'pendientes'
+        ? 'Nada por revisar en este día.<br>Todo el equipo cuadra.'
+        : 'No hay nadie con turno ni marcas en este día.') + '</div>';
+    return;
+  }
+
+  let html = '';
+  lista.forEach(f => {
+    const p = pillDe(f.estado === 'RESUELTO' ? (f.novedad || 'RESUELTO') : f.estado);
+    let sub = f.turno ? ('Turno ' + esc(f.turno)) : 'Sin turno programado';
+    if(f.tipo && f.tipo !== 'SIN ASIGNAR') sub += ' · ' + esc(f.tipo);
+
+    const marcas = [];
+    if(f.entrada)  marcas.push('Entró ' + esc(f.entrada));
+    if(f.breakIni) marcas.push('Break ' + esc(f.breakIni) + (f.breakFin ? '→' + esc(f.breakFin) : '→ ?'));
+    else if(f.breakFin) marcas.push('Retorno ' + esc(f.breakFin) + ' (sin salida)');
+    if(f.salida)   marcas.push('Salió ' + esc(f.salida));
+    const lineaMarcas = marcas.length ? marcas.join('  ·  ') : 'Sin ninguna marca';
+
+    html +=
+      '<div class="eq-card">' +
+        '<div class="eq-top">' +
+          '<div class="eq-nombre">'+esc(f.nombre)+
+            '<div class="eq-sub">'+sub+'</div>' +
+            '<div class="eq-marcas">'+lineaMarcas+'</div></div>' +
+          '<span class="pill '+p.c+'">'+esc(p.t)+'</span>' +
+        '</div>' +
+        (f.estado === 'RESUELTO'
+          ? '<div class="eq-detalle">'+(f.obs ? esc(f.obs)+' · ' : '')+'Resuelto por '+esc(f.por||'—')+'</div>'
+          : (f.detalle ? '<div class="eq-detalle">'+esc(f.detalle)+'</div>' : '')) +
+        '<button class="eq-accion" onclick="abrirModalNovedad(&quot;'+esc(f.dni)+'&quot;)">' +
+          (f.estado === 'RESUELTO' ? 'Cambiar lo registrado' : 'Registrar qué pasó') + '</button>' +
+      '</div>';
+  });
+  cont.innerHTML = html;
+}
+
+/* ── Modal para resolver un día ── */
+function abrirModalNovedad(dni){
+  const f = equipoDatos.filter(x => String(x.dni) === String(dni))[0];
+  if(!f) return;
+  novTarget = { dni:f.dni, id:f.id, nombre:f.nombre, turno:f.turno };
+  document.getElementById('nov-nombre').textContent = f.nombre;
+  document.getElementById('nov-sub').textContent =
+    (equipoFecha || '') + (f.turno ? ' · turno ' + f.turno : ' · sin turno programado');
+
+  const sel = document.getElementById('nov-estado');
+  sel.innerHTML = equipoEstados.map(e =>
+    '<option value="'+esc(e)+'">'+esc(PILLS[e] ? PILLS[e].t : e)+'</option>').join('');
+
+  document.getElementById('nov-obs').value = '';
+  const m = document.getElementById('nov-msg');
+  m.className = 'msg'; m.textContent = '';
+  document.getElementById('nov-guardar').disabled = false;
+  document.getElementById('nov-guardar').textContent = 'Guardar';
+  document.getElementById('modal-nov').classList.add('abierto');
+}
+
+function cerrarModalNovedad(){
+  document.getElementById('modal-nov').classList.remove('abierto');
+  novTarget = null;
+}
+
+async function guardarNovedad(){
+  if(!novTarget) return;
+  const btn = document.getElementById('nov-guardar');
+  const msg = document.getElementById('nov-msg');
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    const res = await api({
+      accion:'registrar_novedad',
+      id: sesion.id, gmail: sesion.gmail,
+      fecha: equipoFecha,
+      dniObjetivo: novTarget.dni,
+      idObjetivo: novTarget.id,
+      nombreObjetivo: novTarget.nombre,
+      estado: document.getElementById('nov-estado').value,
+      obs: document.getElementById('nov-obs').value
+    });
+    if(!res.ok){
+      msg.textContent = res.error || 'No se pudo guardar.';
+      msg.className = 'msg error';
+      btn.disabled = false; btn.textContent = 'Guardar';
+      return;
+    }
+    const nombreGuardado = novTarget.nombre;
+    cerrarModalNovedad();
+    mostrarToast('✓ Registrado para ' + nombreGuardado, 'exito');
+    cargarEquipo();
+  }catch(e){
+    msg.textContent = 'Sin conexión. Intenta de nuevo cuando tengas internet.';
+    msg.className = 'msg error';
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
+}
+
 async function api(payload){const r=await fetch(SCRIPT_URL,{method:'POST',redirect:'follow',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});return r.json();}
 let toastTimer=null;
 function mostrarToast(msg,tipo){const t=document.getElementById('toast');t.textContent=msg;t.className='visible '+(tipo||'');clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.className='';},4500);}
