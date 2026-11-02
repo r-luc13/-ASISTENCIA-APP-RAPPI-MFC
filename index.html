@@ -429,6 +429,11 @@
     <div class="opcion-item" id="op-sync"><span>Marcas pendientes</span><span class="val" id="op-pend">0</span></div>
     <button class="btn btn-secundario" onclick="sincronizarAhora()">Sincronizar ahora</button>
     <button class="btn btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
+    <button class="btn btn-secundario" onclick="forzarActualizacion()">Buscar actualización</button>
+    <p class="nota-pie" style="margin-top:14px">
+      App <b id="op-version">--</b><br>
+      Servidor <b id="op-version-srv">--</b>
+    </p>
   </div>
 </div>
 
@@ -1237,6 +1242,9 @@ function renderOpciones(){
   document.getElementById('op-dni').textContent=sesion&&sesion.dni?sesion.dni:'—';
   var opTipo=document.getElementById('op-tipo');
   if(opTipo) opTipo.textContent=sesion&&sesion.tipoPersonal?sesion.tipoPersonal:'—';
+  var opV=document.getElementById('op-version');
+  if(opV) opV.textContent=APP_VERSION;
+  mostrarVersionServidor();
   const img=document.getElementById('ref-foto');
   const btnFoto=document.getElementById('btn-actualizar-foto');
   if(sesion&&sesion.fotoRef&&sesion.fotoRef!==''){
@@ -1256,6 +1264,44 @@ function actualizarFotoReferencia(){
   document.getElementById('modal-titulo').textContent='Nueva foto de referencia — mira directo a la cámara';
   abrirModal();
   iniciarCamara();
+}
+
+/* Sello de versión. Si la app y el servidor no coinciden, el teléfono tiene
+   guardada una copia vieja y hay que forzar la recarga. */
+const APP_VERSION = '2026-11-02-c';
+
+/* Pregunta al Apps Script qué versión tiene, y avisa si no coinciden. */
+async function mostrarVersionServidor(){
+  const e = document.getElementById('op-version-srv');
+  if(!e) return;
+  e.textContent = 'consultando…';
+  try{
+    const r = await api({accion:'version'});
+    const v = (r && r.version) ? r.version : '(sin dato)';
+    e.textContent = v;
+    e.style.color = (v === APP_VERSION) ? '' : 'var(--rojo)';
+    if(v !== APP_VERSION && v !== '(sin dato)'){
+      e.insertAdjacentHTML('afterend',
+        '<br><span style="color:var(--rojo)">No coinciden. Toca <b>Buscar actualización</b>.</span>');
+    }
+  }catch(err){ e.textContent = 'sin conexión'; }
+}
+
+/* Recarga saltándose el caché del navegador y el service worker. */
+async function forzarActualizacion(){
+  try{
+    if('serviceWorker' in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if(window.caches){
+      const llaves = await caches.keys();
+      await Promise.all(llaves.map(k => caches.delete(k)));
+    }
+  }catch(e){}
+  const u = new URL(location.href);
+  u.searchParams.set('v', Date.now());
+  location.replace(u.toString());
 }
 
 function cerrarSesion(){
@@ -1504,7 +1550,9 @@ async function cargarEquipo(){
       return;
     }
     equipoFecha = res.fecha;
-    equipoGrupos = res.grupos || [];
+    // Si el servidor todavía es el anterior manda 'filas' sueltas: las agrupamos
+    // aquí. Así la app nunca queda en blanco por desfase entre las dos mitades.
+    equipoGrupos = (res.grupos && res.grupos.length) ? res.grupos : agruparEnElNavegador(res.filas || []);
     equipoDatos = [];
     equipoGrupos.forEach(gr => gr.filas.forEach(f => equipoDatos.push(f)));
     equipoEstados = res.estados || [];
@@ -1557,6 +1605,49 @@ function renderEquipo(){
       '</div>' + gr.filas.map(tarjetaPersona).join('') +
     '</div>';
   }).join('');
+}
+
+/* Respaldo: agrupar por turno sin ayuda del servidor. Solo se usa cuando el
+   Code.gs desplegado todavía es el anterior y manda las filas sueltas. */
+function agruparEnElNavegador(filas){
+  if(!filas || !filas.length) return [];
+  const seg = t => {
+    const m = String(t||'').match(/^(\d{1,2}):(\d{2}) - (\d{1,2}):(\d{2})$/);
+    if(!m) return null;
+    let ini = +m[1]*3600 + +m[2]*60, fin = +m[3]*3600 + +m[4]*60;
+    if(fin <= ini) fin += 86400;
+    return {ini, fin};
+  };
+  const ahora = (() => { const d = new Date(); return d.getHours()*3600 + d.getMinutes()*60; })();
+  const esHoy = (equipoFecha || fechaHoy()) === fechaHoy();
+
+  const mapa = {};
+  filas.forEach(f => {
+    const clave = f.turno || 'SIN TURNO ASIGNADO';
+    if(!mapa[clave]){
+      const r = seg(clave);
+      let fase = 3, etiqueta = '';
+      if(r && esHoy){
+        if(ahora < r.ini)      { fase = 2; etiqueta = 'POR EMPEZAR'; }
+        else if(ahora < r.fin) { fase = 0; etiqueta = 'EN CURSO'; }
+        else                   { fase = 1; etiqueta = 'TERMINÓ'; }
+      } else if(r){ fase = 1; etiqueta = 'TERMINÓ'; }
+      mapa[clave] = {turno: clave, etiqueta, fase,
+                     ini: r ? r.ini : 999999, fin: r ? r.fin : 999999, filas: []};
+    }
+    mapa[clave].filas.push(f);
+  });
+
+  const orden = {'EN TURNO':1,'EN BREAK':2,'OK':3,'SIN SALIDA':4,'BREAK INCOMPLETO':5,
+                 'FUERA DE ORDEN':6,'SIN TURNO':7,'RESUELTO':8,'POR EMPEZAR':9,'SIN MARCA':10};
+  const grupos = Object.keys(mapa).map(k => mapa[k]);
+  grupos.sort((a,b) => a.fase !== b.fase ? a.fase - b.fase
+                     : (a.fase === 1 ? b.fin - a.fin : a.ini - b.ini));
+  grupos.forEach(g => g.filas.sort((x,y) => {
+    const d = (orden[x.estado]||99) - (orden[y.estado]||99);
+    return d !== 0 ? d : (x.nombre < y.nombre ? -1 : 1);
+  }));
+  return grupos;
 }
 
 function tarjetaPersona(f){
