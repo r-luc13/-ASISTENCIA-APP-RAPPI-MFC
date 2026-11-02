@@ -107,15 +107,32 @@
   .dia-marcas{font-size:12px;font-weight:500;color:var(--gris);margin-top:2px;}
   .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;white-space:nowrap;}
   .pill.ok{background:#DCF3E4;color:#05653A;}
+  .pill.curso{background:#DCE6FF;color:#1B3C92;}
   .pill.aviso{background:#FFF1CC;color:#7A5200;}
   .pill.malo{background:#FFDEDE;color:#A11212;}
+  .pill.nota{background:#EDE4F7;color:#52307C;}
+  .pill.espera{background:#EFEFEF;color:#5A5A5A;}
   .pill.info{background:#DCE6FF;color:#1B3C92;}
   .pill.libre{background:#EFEFEF;color:#5A5A5A;}
 
-  .eq-resumen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:14px;}
+  /* Grupos de turno */
+  .grupo{margin-bottom:18px;}
+  .grupo-cab{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-bottom:7px;
+             border-bottom:2px solid var(--line);}
+  .grupo-turno{font-size:15px;font-weight:800;color:var(--dark);}
+  .grupo-eti{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+             padding:3px 8px;border-radius:999px;background:#EFEFEF;color:#5A5A5A;}
+  .grupo-eti.curso{background:#DCE6FF;color:#1B3C92;}
+  .grupo-eti.termino{background:#FFF1CC;color:#7A5200;}
+  .grupo-n{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--gris);}
+  .grupo-n b{color:var(--rojo);}
+  .grupo.encurso .grupo-cab{border-bottom-color:var(--azul);}
+  .eq-card.espera{opacity:.72;}
+
+  .eq-resumen{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:14px;}
   .eq-dato{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
-  .eq-dato .n{font-size:22px;font-weight:800;line-height:1.1;color:var(--dark);}
-  .eq-dato .t{font-size:10px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--gris);margin-top:3px;}
+  .eq-dato .n{font-size:21px;font-weight:800;line-height:1.1;color:var(--dark);}
+  .eq-dato .t{font-size:9px;font-weight:700;letter-spacing:0.02em;text-transform:uppercase;color:var(--gris);margin-top:3px;line-height:1.2;}
   .eq-filtros{display:flex;gap:8px;margin-bottom:12px;}
   .eq-filtro{flex:1;padding:10px;border:1.5px solid var(--line);background:var(--card);border-radius:10px;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;color:var(--gris);cursor:pointer;}
   .eq-filtro.activo{border-color:var(--naranja);background:var(--naranja-light);color:var(--naranja);}
@@ -126,6 +143,8 @@
   .eq-marcas{font-size:12px;font-weight:600;color:var(--dark);margin-top:5px;}
   .eq-detalle{font-size:12px;font-weight:500;color:var(--gris);margin-top:6px;line-height:1.4;}
   .eq-accion{margin-top:10px;width:100%;padding:11px;border:1.5px solid var(--naranja-border);background:var(--naranja-light);color:var(--naranja);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  /* Quien ya cuadra no necesita un boton rojo: queda disponible, pero callado */
+  .eq-accion.suave{margin-top:8px;padding:8px;border-color:#E4E0DD;background:transparent;color:#8A8681;font-weight:600;font-size:12.5px;}
   .vacio{text-align:center;color:var(--gris);font-size:13px;font-weight:600;padding:28px 14px;}
   .herr{margin-top:22px;padding-top:18px;border-top:1.5px solid var(--line);}
   .herr-tit{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);margin-bottom:10px;}
@@ -1295,6 +1314,7 @@ function esAmanecida(){
 let semanaBase = null;
 let equipoFecha = null;
 let equipoDatos = [];
+let equipoGrupos = [];
 let equipoEstados = [];
 let equipoFiltro = 'pendientes';
 let novTarget = null;
@@ -1313,25 +1333,35 @@ function sumarDiasLocal(f, n){
 }
 
 /* Como se ve cada estado en pantalla */
+/* Paleta por significado, no por capricho:
+     espera  gris    todavía no pasa nada
+     curso   azul    está trabajando ahora
+     ok      verde   terminó bien
+     aviso   ámbar   hay que revisarlo
+     malo    rojo    falta de verdad
+     nota    violeta resuelto o justificado      */
 const PILLS = {
-  'COMPLETO':          {c:'ok',    t:'Completo'},
-  'EN TURNO':          {c:'info',  t:'En turno'},
-  'SIN SALIDA':        {c:'aviso', t:'Sin salida'},
-  'SIN MARCA':         {c:'malo',  t:'No marcaste'},
-  'PENDIENTE':         {c:'aviso', t:'Pendiente'},
-  'PROGRAMADO':        {c:'info',  t:'Programado'},
-  'OFF':               {c:'libre', t:'Descanso'},
-  'ASISTIÓ':           {c:'ok',    t:'Asistió'},
-  'FALTA':             {c:'malo',  t:'Falta'},
-  'FALTA JUSTIFICADA': {c:'aviso', t:'Falta justif.'},
-  'PERMISO':           {c:'aviso', t:'Permiso'},
-  'DESCANSO MÉDICO':   {c:'info',  t:'Descanso médico'},
-  'VACACIONES':        {c:'info',  t:'Vacaciones'},
-  'LUTO':              {c:'info',  t:'Luto'},
-  'SIN TURNO':         {c:'aviso', t:'Sin turno'},
-  'BREAK INCOMPLETO':  {c:'aviso', t:'Break a medias'},
-  'FUERA DE ORDEN':    {c:'malo',  t:'Falta confirmar'},
-  'RESUELTO':          {c:'info',  t:'Resuelto'}
+  'POR EMPEZAR':       {c:'espera', t:'Por empezar'},
+  'EN TURNO':          {c:'curso',  t:'En turno'},
+  'EN BREAK':          {c:'curso',  t:'En break'},
+  'COMPLETO':          {c:'ok',     t:'Completo'},
+  'OK':                {c:'ok',     t:'Completo'},
+  'SIN SALIDA':        {c:'aviso',  t:'Sin salida'},
+  'BREAK INCOMPLETO':  {c:'aviso',  t:'Break a medias'},
+  'SIN TURNO':         {c:'aviso',  t:'Sin turno'},
+  'SIN MARCA':         {c:'malo',   t:'No marcó'},
+  'FUERA DE ORDEN':    {c:'malo',   t:'Falta confirmar'},
+  'PENDIENTE':         {c:'espera', t:'Pendiente'},
+  'PROGRAMADO':        {c:'espera', t:'Programado'},
+  'OFF':               {c:'espera', t:'Descanso'},
+  'ASISTIÓ':           {c:'ok',     t:'Asistió'},
+  'FALTA':             {c:'malo',   t:'Falta'},
+  'FALTA JUSTIFICADA': {c:'nota',   t:'Falta justif.'},
+  'PERMISO':           {c:'nota',   t:'Permiso'},
+  'DESCANSO MÉDICO':   {c:'nota',   t:'Descanso médico'},
+  'VACACIONES':        {c:'nota',   t:'Vacaciones'},
+  'LUTO':              {c:'nota',   t:'Luto'},
+  'RESUELTO':          {c:'nota',   t:'Resuelto'}
 };
 function pillDe(estado){
   return PILLS[String(estado||'').toUpperCase()] || {c:'libre', t:estado || '—'};
@@ -1474,14 +1504,18 @@ async function cargarEquipo(){
       return;
     }
     equipoFecha = res.fecha;
-    equipoDatos = res.filas || [];
+    equipoGrupos = res.grupos || [];
+    equipoDatos = [];
+    equipoGrupos.forEach(gr => gr.filas.forEach(f => equipoDatos.push(f)));
     equipoEstados = res.estados || [];
-    document.getElementById('eq-fecha').textContent = res.fechaTexto || res.fecha;
+    document.getElementById('eq-fecha').textContent =
+      (res.fechaTexto || res.fecha) + (res.esHoy ? '  ·  ' + res.hora : '');
     const r = res.resumen || {};
     document.getElementById('eq-resumen').innerHTML =
+      '<div class="eq-dato"><div class="n" style="color:var(--azul)">'+(r.enTurno||0)+'</div><div class="t">En turno</div></div>' +
       '<div class="eq-dato"><div class="n" style="color:var(--rojo)">'+(r.pendientes||0)+'</div><div class="t">Por revisar</div></div>' +
-      '<div class="eq-dato"><div class="n" style="color:var(--verde)">'+(r.ok||0)+'</div><div class="t">Sin problema</div></div>' +
-      '<div class="eq-dato"><div class="n" style="color:var(--azul)">'+(r.resueltos||0)+'</div><div class="t">Resueltos</div></div>';
+      '<div class="eq-dato"><div class="n" style="color:var(--verde)">'+(r.completos||0)+'</div><div class="t">Completos</div></div>' +
+      '<div class="eq-dato"><div class="n" style="color:var(--gris)">'+(r.porEmpezar||0)+'</div><div class="t">Por empezar</div></div>';
     renderEquipo();
   }catch(e){
     document.getElementById('eq-fecha').textContent = '—';
@@ -1490,49 +1524,75 @@ async function cargarEquipo(){
   }
 }
 
+/* Lo que de verdad necesita acción. Un turno que no empieza hasta las 22:00
+   no es un pendiente a las 11 de la mañana. */
+const RESUELTOS = ['OK','RESUELTO','POR EMPEZAR','EN TURNO','EN BREAK'];
+
 function renderEquipo(){
   const cont = document.getElementById('equipo-lista');
-  const lista = equipoFiltro === 'pendientes'
-    ? equipoDatos.filter(f => f.estado !== 'OK' && f.estado !== 'RESUELTO')
-    : equipoDatos;
+  const soloPend = (equipoFiltro === 'pendientes');
 
-  if(lista.length === 0){
+  const grupos = equipoGrupos
+    .map(gr => ({ ...gr, filas: soloPend ? gr.filas.filter(f => RESUELTOS.indexOf(f.estado) < 0) : gr.filas }))
+    .filter(gr => gr.filas.length > 0);
+
+  if(grupos.length === 0){
     cont.innerHTML = '<div class="vacio">' +
-      (equipoFiltro === 'pendientes'
+      (soloPend
         ? 'Nada por revisar en este día.<br>Todo el equipo cuadra.'
         : 'No hay nadie con turno ni marcas en este día.') + '</div>';
     return;
   }
 
-  let html = '';
-  lista.forEach(f => {
-    const p = pillDe(f.estado === 'RESUELTO' ? (f.novedad || 'RESUELTO') : f.estado);
-    let sub = f.turno ? ('Turno ' + esc(f.turno)) : 'Sin turno programado';
-    if(f.tipo && f.tipo !== 'SIN ASIGNAR') sub += ' · ' + esc(f.tipo);
+  cont.innerHTML = grupos.map(gr => {
+    const cls = gr.etiqueta === 'EN CURSO' ? 'curso'
+              : (gr.etiqueta === 'TERMINÓ' ? 'termino' : '');
+    const pend = gr.filas.filter(f => RESUELTOS.indexOf(f.estado) < 0).length;
+    return '<div class="grupo' + (gr.etiqueta === 'EN CURSO' ? ' encurso' : '') + '">' +
+      '<div class="grupo-cab">' +
+        '<span class="grupo-turno">' + esc(gr.turno) + '</span>' +
+        (gr.etiqueta ? '<span class="grupo-eti ' + cls + '">' + esc(gr.etiqueta) + '</span>' : '') +
+        '<span class="grupo-n">' + gr.filas.length + (gr.filas.length === 1 ? ' persona' : ' personas') +
+          (pend ? ' · <b>' + pend + ' por revisar</b>' : '') + '</span>' +
+      '</div>' + gr.filas.map(tarjetaPersona).join('') +
+    '</div>';
+  }).join('');
+}
 
-    const marcas = [];
-    if(f.entrada)  marcas.push('Entró ' + esc(f.entrada));
-    if(f.breakIni) marcas.push('Break ' + esc(f.breakIni) + (f.breakFin ? '→' + esc(f.breakFin) : '→ ?'));
-    else if(f.breakFin) marcas.push('Retorno ' + esc(f.breakFin) + ' (sin salida)');
-    if(f.salida)   marcas.push('Salió ' + esc(f.salida));
-    const lineaMarcas = marcas.length ? marcas.join('  ·  ') : 'Sin ninguna marca';
+function tarjetaPersona(f){
+  const p = pillDe(f.estado === 'RESUELTO' ? (f.novedad || 'RESUELTO') : f.estado);
+  let sub = f.turno ? ('Turno ' + esc(f.turno)) : 'Sin turno programado';
+  if(f.tipo && f.tipo !== 'SIN ASIGNAR') sub += ' · ' + esc(f.tipo);
 
-    html +=
-      '<div class="eq-card">' +
-        '<div class="eq-top">' +
-          '<div class="eq-nombre">'+esc(f.nombre)+
-            '<div class="eq-sub">'+sub+'</div>' +
-            '<div class="eq-marcas">'+lineaMarcas+'</div></div>' +
-          '<span class="pill '+p.c+'">'+esc(p.t)+'</span>' +
-        '</div>' +
-        (f.estado === 'RESUELTO'
-          ? '<div class="eq-detalle">'+(f.obs ? esc(f.obs)+' · ' : '')+'Resuelto por '+esc(f.por||'—')+'</div>'
-          : (f.detalle ? '<div class="eq-detalle">'+esc(f.detalle)+'</div>' : '')) +
-        '<button class="eq-accion" onclick="abrirModalNovedad(&quot;'+esc(f.dni)+'&quot;)">' +
-          (f.estado === 'RESUELTO' ? 'Cambiar lo registrado' : 'Registrar qué pasó') + '</button>' +
-      '</div>';
-  });
-  cont.innerHTML = html;
+  // Sin segundos: el ':00' del final no le sirve a nadie
+  const hm = v => esc(String(v || '').substring(0,5));
+
+  const marcas = [];
+  if(f.entrada)  marcas.push('Entró ' + hm(f.entrada));
+  if(f.breakIni) marcas.push('Break ' + hm(f.breakIni) + (f.breakFin ? ' → ' + hm(f.breakFin) : ' → sin retorno'));
+  else if(f.breakFin) marcas.push('Retorno ' + hm(f.breakFin) + ' (sin salida)');
+  if(f.salida)   marcas.push('Salió ' + hm(f.salida));
+  const lineaMarcas = marcas.length ? marcas.join('  ·  ') : 'Sin ninguna marca';
+
+  // El boton solo grita cuando de verdad hay algo que resolver
+  const tranquilo = RESUELTOS.indexOf(f.estado) >= 0;
+
+  return '<div class="eq-card' + (f.estado === 'POR EMPEZAR' ? ' espera' : '') + '">' +
+      '<div class="eq-top">' +
+        '<div class="eq-nombre">'+esc(f.nombre)+
+          '<div class="eq-sub">'+sub+'</div>' +
+          '<div class="eq-marcas">'+lineaMarcas+'</div></div>' +
+        '<span class="pill '+p.c+'">'+esc(p.t)+'</span>' +
+      '</div>' +
+      (f.estado === 'RESUELTO'
+        ? '<div class="eq-detalle">'+(f.obs ? esc(f.obs)+' · ' : '')+'Resuelto por '+esc(f.por||'—')+'</div>'
+        : (f.detalle ? '<div class="eq-detalle">'+esc(f.detalle)+'</div>' : '')) +
+      (f.estado === 'POR EMPEZAR' ? '' :
+        '<button class="eq-accion' + (tranquilo ? ' suave' : '') +
+          '" onclick="abrirModalNovedad(&quot;'+esc(f.dni)+'&quot;)">' +
+        (f.estado === 'RESUELTO' ? 'Cambiar lo registrado'
+          : (tranquilo ? 'Registrar algo' : 'Registrar qué pasó')) + '</button>') +
+    '</div>';
 }
 
 /* ── Modal para resolver un día ── */
