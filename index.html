@@ -127,6 +127,17 @@
   .eq-detalle{font-size:12px;font-weight:500;color:var(--gris);margin-top:6px;line-height:1.4;}
   .eq-accion{margin-top:10px;width:100%;padding:11px;border:1.5px solid var(--naranja-border);background:var(--naranja-light);color:var(--naranja);border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
   .vacio{text-align:center;color:var(--gris);font-size:13px;font-weight:600;padding:28px 14px;}
+  .herr{margin-top:22px;padding-top:18px;border-top:1.5px solid var(--line);}
+  .herr-tit{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);margin-bottom:10px;}
+  .herr-fila{display:flex;gap:8px;margin-bottom:12px;}
+  .herr-fila input{flex:1 1 auto;min-width:0;}
+  .pers{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;}
+  .pers-nom{font-size:14px;font-weight:700;color:var(--dark);}
+  .pers-sub{font-size:12px;font-weight:500;color:var(--gris);margin-top:3px;}
+  .pers-btn{margin-top:10px;width:100%;padding:10px;border:1.5px solid var(--line);background:var(--card);
+            border-radius:10px;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;color:var(--dark);cursor:pointer;}
+  .pers-btn:hover{border-color:var(--naranja);color:var(--naranja);}
+  .pers-btn:disabled{opacity:.5;cursor:default;}
 
   .modal-nov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:18px;}
   .modal-nov.abierto{display:flex;}
@@ -365,6 +376,17 @@
       <button class="eq-filtro" data-filtro="todos" onclick="filtrarEquipo('todos')">Todos</button>
     </div>
     <div id="equipo-lista"></div>
+
+    <div class="herr">
+      <div class="herr-tit">Herramientas de supervisor</div>
+      <div class="herr-fila">
+        <input id="sup-buscar" class="nov-input" style="margin:0" type="text"
+               placeholder="Nombre, DNI o correo" onkeydown="if(event.key==='Enter')buscarColab()">
+        <button class="btn btn-primario" style="margin:0;width:auto;padding:13px 18px" onclick="buscarColab()">Buscar</button>
+      </div>
+      <div class="msg" id="sup-msg"></div>
+      <div id="sup-result"></div>
+    </div>
   </div>
 
   <!-- TAB HISTORIAL -->
@@ -1372,6 +1394,55 @@ function renderMiHorario(res){
   document.getElementById('horario-nota').innerHTML = conTurno === 0
     ? 'Esta semana no tienes turnos cargados.<br>Si crees que es un error, avisa a tu supervisor.'
     : 'Tu turno sale del horario que carga el supervisor.<br>Si ves un día mal, avísale el mismo día.';
+}
+
+/* ── Herramientas del supervisor ── */
+async function buscarColab(){
+  const q = document.getElementById('sup-buscar').value.trim();
+  const msg = document.getElementById('sup-msg');
+  const cont = document.getElementById('sup-result');
+  msg.className='msg'; msg.textContent=''; cont.innerHTML='';
+  if(q.length < 3){ msg.textContent='Escribe al menos 3 letras, o el DNI completo.'; msg.className='msg error'; return; }
+
+  cont.innerHTML = '<div class="vacio">Buscando…</div>';
+  try{
+    const res = await api({accion:'buscar_colab', id:sesion.id, gmail:sesion.gmail, buscar:q});
+    if(!res.ok){ cont.innerHTML=''; msg.textContent=res.error||'Sin resultados.'; msg.className='msg error'; return; }
+    cont.innerHTML = res.resultados.map(p => {
+      const sub = [];
+      sub.push('DNI ' + esc(p.dni));
+      if(p.tipo && p.tipo !== 'SIN ASIGNAR') sub.push(esc(p.tipo));
+      if(p.rol && p.rol !== 'COLABORADOR') sub.push(esc(p.rol));
+      if(!p.activo) sub.push('DE BAJA');
+      if(!p.tieneCuenta) sub.push('sin cuenta en la app');
+      const turno = p.turnoHoy ? 'Hoy: ' + esc(p.turnoHoy) : 'Hoy no tiene turno';
+      return '<div class="pers">' +
+        '<div class="pers-nom">' + esc(p.nombre) + '</div>' +
+        '<div class="pers-sub">' + sub.join(' · ') + '</div>' +
+        '<div class="pers-sub">' + turno + '</div>' +
+        (p.tieneCuenta && p.activo
+          ? '<button class="pers-btn" onclick="resetPass(&quot;'+esc(p.dni)+'&quot;,&quot;'+esc(p.nombre)+'&quot;)">Resetear su contraseña</button>'
+          : '') +
+      '</div>';
+    }).join('');
+  }catch(e){
+    cont.innerHTML='';
+    msg.textContent='Sin conexión.'; msg.className='msg error';
+  }
+}
+
+async function resetPass(dni, nombre){
+  if(!confirm('¿Resetear la contraseña de ' + nombre + '?\n\nVa a tener que crear una nueva la próxima vez que entre a la app.')) return;
+  const msg = document.getElementById('sup-msg');
+  msg.className='msg'; msg.textContent='';
+  try{
+    const res = await api({accion:'resetear_pass', id:sesion.id, gmail:sesion.gmail, buscar:dni});
+    if(!res.ok){ msg.textContent=res.error||'No se pudo.'; msg.className='msg error'; return; }
+    msg.textContent = res.mensaje; msg.className='msg info';
+    mostrarToast('✓ Contraseña reseteada','exito');
+  }catch(e){
+    msg.textContent='Sin conexión.'; msg.className='msg error';
+  }
 }
 
 /* ═══════════════ PANEL DE EQUIPO (supervisores) ═══════════════ */
