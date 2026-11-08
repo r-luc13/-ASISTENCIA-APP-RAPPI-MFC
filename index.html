@@ -146,6 +146,28 @@
   /* Quien ya cuadra no necesita un boton rojo: queda disponible, pero callado */
   .eq-accion.suave{margin-top:8px;padding:8px;border-color:#E4E0DD;background:transparent;color:#8A8681;font-weight:600;font-size:12.5px;}
 
+  /* ── Programar el horario de una persona ── */
+  .hor-nav{display:flex;gap:6px;margin:12px 0 10px;}
+  .hor-nav button{flex:1;padding:8px 4px;border:1.5px solid var(--line);background:#fff;
+    border-radius:9px;font-family:'Inter',sans-serif;font-size:11.5px;font-weight:700;
+    color:var(--dark);cursor:pointer;}
+  .hor-aviso{background:#FFF4F0;border:1.5px solid #FFD4C7;border-radius:9px;
+    padding:9px 11px;font-size:12px;line-height:1.45;color:#7A3B28;margin-bottom:10px;}
+  .hor-dia{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid #F0EDEB;}
+  .hor-dia:last-child{border-bottom:none;}
+  .hor-dia .et{flex:0 0 94px;min-width:0;}
+  .hor-dia .et b{display:block;font-size:12.5px;font-weight:800;color:var(--dark);}
+  .hor-dia .et span{display:block;font-size:10.5px;color:var(--gris);}
+  .hor-dia select{flex:1 1 auto;min-width:0;padding:8px;border:1.5px solid var(--line);
+    border-radius:8px;font-family:'Inter',sans-serif;font-size:13px;background:#fff;}
+  .hor-dia.libre select{color:var(--gris);background:#FAFAFA;}
+  .hor-mas{margin-top:12px;border-top:1px solid #F0EDEB;padding-top:10px;}
+  .hor-mas summary{font-size:12px;font-weight:700;color:var(--gris);cursor:pointer;}
+  .hor-mas label{display:block;font-size:10.5px;font-weight:800;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--gris);margin:10px 0 4px;}
+  .hor-mas select{width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:13px;background:#fff;}
+
   /* ── Anotado en el teléfono, todavía sin cargar al servidor ── */
   .eq-card.listo{border-color:var(--dark);box-shadow:0 0 0 2px rgba(20,20,19,.07);}
   .lote-listo{display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -459,6 +481,39 @@
       App <b id="op-version">--</b><br>
       Servidor <b id="op-version-srv">--</b>
     </p>
+  </div>
+</div>
+
+<!-- MODAL: PROGRAMAR EL HORARIO DE UNA PERSONA -->
+<div class="modal-nov" id="modal-hor">
+  <div class="modal-nov-caja">
+    <div class="modal-nov-titulo" id="hor-nombre">—</div>
+    <div class="modal-nov-sub" id="hor-rango">—</div>
+
+    <div class="hor-nav">
+      <button onclick="moverSemanaHor(-7)">‹ Semana anterior</button>
+      <button onclick="semanaHorHoy()">Esta semana</button>
+      <button onclick="moverSemanaHor(7)">Siguiente ›</button>
+    </div>
+
+    <div class="hor-aviso" id="hor-aviso" style="display:none"></div>
+    <div id="hor-dias"></div>
+
+    <details class="hor-mas">
+      <summary>Área, posición y modalidad</summary>
+      <label for="hor-area">Área</label>
+      <select id="hor-area"></select>
+      <label for="hor-posicion">Posición</label>
+      <select id="hor-posicion"></select>
+      <label for="hor-modalidad">Modalidad</label>
+      <select id="hor-modalidad"></select>
+    </details>
+
+    <div class="msg" id="hor-msg"></div>
+    <div class="nov-botones">
+      <button class="btn btn-secundario" onclick="cerrarModalHorario()">Cancelar</button>
+      <button class="btn btn-primario" id="hor-guardar" onclick="guardarHorarioDe()">Guardar en el horario</button>
+    </div>
   </div>
 </div>
 
@@ -1309,7 +1364,7 @@ function actualizarFotoReferencia(){
 
 /* Sello de versión. Si la app y el servidor no coinciden, el teléfono tiene
    guardada una copia vieja y hay que forzar la recarga. */
-const APP_VERSION = '2026-11-04-b';
+const APP_VERSION = '2026-11-08-b';
 
 /* Pregunta al Apps Script qué versión tiene, y avisa si no coinciden. */
 async function mostrarVersionServidor(){
@@ -1634,6 +1689,7 @@ async function buscarColab(){
         '<div class="pers-nom">' + esc(p.nombre) + '</div>' +
         '<div class="pers-sub">' + sub.join(' · ') + '</div>' +
         '<div class="pers-sub">' + turno + '</div>' +
+        '<button class="pers-btn" onclick="abrirHorarioDe(&quot;'+esc(p.dni)+'&quot;,&quot;'+esc(p.nombre)+'&quot;,&quot;'+esc(p.id)+'&quot;)">Programar su horario</button>' +
         (p.tieneCuenta && p.activo
           ? '<button class="pers-btn" onclick="resetPass(&quot;'+esc(p.dni)+'&quot;,&quot;'+esc(p.nombre)+'&quot;)">Resetear su contraseña</button>'
           : '') +
@@ -1641,6 +1697,140 @@ async function buscarColab(){
     }).join('');
   }catch(e){
     cont.innerHTML='';
+    msg.textContent='Sin conexión.'; msg.className='msg error';
+  }
+}
+
+/* ── Programar el horario de una persona desde la app ────────────────
+   Lo que se guarda aquí aparece en la hoja Horarios, en la semana que
+   corresponda, y de ahí sale todo lo demás: el turno del día, el cuadre
+   y las faltas.                                                        */
+let horTarget = null;      // {dni, nombre, id}
+let horLunes  = null;      // el lunes de la semana que se está viendo
+let horDatos  = null;      // lo que devolvió el servidor
+
+function lunesDe(fechaStr){
+  const p = String(fechaStr).split('-');
+  const d = new Date(+p[0], +p[1]-1, +p[2]);
+  const i = (d.getDay() + 6) % 7;          // 0 = lunes
+  d.setDate(d.getDate() - i);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+}
+
+function abrirHorarioDe(dni, nombre, id){
+  horTarget = { dni:dni, nombre:nombre, id:id };
+  horLunes  = lunesDe(equipoFecha || fechaHoy());
+  document.getElementById('hor-nombre').textContent = nombre;
+  document.getElementById('modal-hor').classList.add('abierto');
+  cargarHorarioSemana();
+}
+function cerrarModalHorario(){
+  document.getElementById('modal-hor').classList.remove('abierto');
+  horTarget = null; horDatos = null;
+}
+function moverSemanaHor(n){ horLunes = sumarDiasLocal(horLunes, n); cargarHorarioSemana(); }
+function semanaHorHoy(){ horLunes = lunesDe(fechaHoy()); cargarHorarioSemana(); }
+
+async function cargarHorarioSemana(){
+  const cont = document.getElementById('hor-dias');
+  const msg  = document.getElementById('hor-msg');
+  msg.className='msg'; msg.textContent='';
+  cont.innerHTML = '<div class="vacio">Cargando…</div>';
+  document.getElementById('hor-aviso').style.display='none';
+
+  try{
+    const res = await api({ accion:'horario_semana', id:sesion.id, gmail:sesion.gmail,
+                            dni:horTarget.dni, lunes:horLunes });
+    if(!res.ok){
+      cont.innerHTML=''; msg.textContent=res.error||'No se pudo cargar.'; msg.className='msg error';
+      return;
+    }
+    horDatos = res;
+    document.getElementById('hor-rango').textContent = res.rango;
+
+    // De dónde salen los turnos que se muestran
+    const av = document.getElementById('hor-aviso');
+    let turnos = res.turnos;
+    if(!res.estaEnLaSemana && res.sugerido){
+      turnos = res.sugerido;
+      av.innerHTML = 'No está en esa semana todavía. Te puse <b>lo que tenía la semana ' +
+                     'anterior</b> para que lo ajustes. Al guardar se agrega.';
+      av.style.display='block';
+    }else if(!res.estaEnLaSemana && !res.semanaExiste){
+      av.innerHTML = 'Esa semana todavía no existe en la hoja. Al guardar <b>se crea</b> ' +
+                     'con esta persona.';
+      av.style.display='block';
+    }else if(!res.estaEnLaSemana){
+      av.innerHTML = 'No está en esa semana. Al guardar <b>se agrega</b> al horario.';
+      av.style.display='block';
+    }
+
+    const ops = ['', ...res.opciones];
+    cont.innerHTML = res.dias.map((d, i) => {
+      const t = turnos[i] || '';
+      const sel = ops.map(o =>
+        '<option value="'+esc(o)+'"'+(o===t?' selected':'')+'>'+
+        (o ? esc(o) : '— libre —')+'</option>').join('');
+      const f = res.fechas[i].split('-');
+      return '<div class="hor-dia'+(t?'':' libre')+'">' +
+        '<div class="et"><b>'+esc(d.substring(0,3))+'</b><span>'+f[2]+'/'+f[1]+'</span></div>' +
+        '<select data-dia="'+i+'" onchange="pintarDiaHor(this)">'+sel+'</select>' +
+      '</div>';
+    }).join('');
+
+    llenarSelect('hor-area',      res.areas,       res.area);
+    llenarSelect('hor-posicion',  res.posiciones,  res.posicion);
+    llenarSelect('hor-modalidad', res.modalidades, res.modalidad);
+  }catch(e){
+    cont.innerHTML=''; msg.textContent='Sin conexión.'; msg.className='msg error';
+  }
+}
+
+function llenarSelect(id, lista, valor){
+  const s = document.getElementById(id);
+  if(!s) return;
+  const ops = (lista || []).slice();
+  if(ops.indexOf('') < 0) ops.unshift('');
+  s.innerHTML = ops.map(o =>
+    '<option value="'+esc(o)+'"'+(o===(valor||'')?' selected':'')+'>'+
+    (o ? esc(o) : '— sin definir —')+'</option>').join('');
+}
+
+function pintarDiaHor(sel){
+  sel.closest('.hor-dia').classList.toggle('libre', !sel.value);
+}
+
+async function guardarHorarioDe(){
+  if(!horTarget || !horDatos) return;
+  const btn = document.getElementById('hor-guardar');
+  const msg = document.getElementById('hor-msg');
+  msg.className='msg'; msg.textContent='';
+
+  const turnos = [];
+  document.querySelectorAll('#hor-dias select').forEach(s => turnos[+s.dataset.dia] = s.value);
+  for(let i=0;i<7;i++) if(turnos[i]===undefined) turnos[i]='';
+
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    const res = await api({
+      accion:'guardar_horario', id:sesion.id, gmail:sesion.gmail,
+      dni:horTarget.dni, nombre:horTarget.nombre, idObjetivo:horTarget.id,
+      lunes:horLunes, turnos:turnos,
+      area:      document.getElementById('hor-area').value,
+      posicion:  document.getElementById('hor-posicion').value,
+      modalidad: document.getElementById('hor-modalidad').value
+    });
+    btn.disabled = false; btn.textContent = 'Guardar en el horario';
+    if(!res.ok){ msg.textContent = res.error||'No se pudo guardar.'; msg.className='msg error'; return; }
+
+    const quien = horTarget.nombre;
+    cerrarModalHorario();
+    mostrarToast('✓ ' + res.mensaje, 'exito');
+    if(document.getElementById('tab-equipo').style.display !== 'none') cargarEquipo();
+    const m2 = document.getElementById('sup-msg');
+    if(m2){ m2.textContent = quien + ': ' + res.mensaje; m2.className = 'msg info'; }
+  }catch(e){
+    btn.disabled = false; btn.textContent = 'Guardar en el horario';
     msg.textContent='Sin conexión.'; msg.className='msg error';
   }
 }
