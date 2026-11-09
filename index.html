@@ -168,6 +168,41 @@
   .hor-mas select{width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;
     font-family:'Inter',sans-serif;font-size:13px;background:#fff;}
 
+  /* ── Amanecida: quien cierra su turno al día siguiente ── */
+  .ama-caja{margin:14px 0 4px;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;}
+  .ama-fila{display:flex;align-items:center;gap:12px;}
+  .ama-txt{flex:1 1 auto;min-width:0;}
+  .ama-txt b{display:block;font-size:14px;font-weight:700;color:var(--dark);}
+  .ama-txt span{display:block;font-size:12px;color:var(--gris);margin-top:2px;}
+  .ama-sw{flex:0 0 auto;position:relative;display:inline-block;width:48px;height:28px;}
+  .ama-sw input{opacity:0;width:0;height:0;}
+  .ama-slider{position:absolute;inset:0;background:#D9D5D2;border-radius:999px;
+    transition:background .18s;cursor:pointer;}
+  .ama-slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:transform .18s;
+    box-shadow:0 1px 3px rgba(0,0,0,.22);}
+  .ama-sw input:checked + .ama-slider{background:var(--azul);}
+  .ama-sw input:checked + .ama-slider:before{transform:translateX(20px);}
+  .ama-sw input:disabled + .ama-slider{opacity:.55;cursor:default;}
+  .ama-estado{margin-top:9px;font-size:12px;line-height:1.45;color:var(--gris);}
+  .ama-estado.pendiente{color:#7A5200;background:#FFF1CC;border-radius:8px;padding:8px 10px;}
+  .ama-estado.activa{color:#05653A;background:#DCF3E4;border-radius:8px;padding:8px 10px;}
+
+  /* Solicitudes que el supervisor tiene que resolver */
+  .ama-sol{border:1.5px solid #FFD4C7;background:#FFF4F0;border-radius:11px;
+    padding:12px 13px;margin-bottom:12px;}
+  .ama-sol h4{margin:0 0 8px;font-size:12px;font-weight:800;text-transform:uppercase;
+    letter-spacing:.04em;color:#7A3B28;}
+  .ama-sol-fila{display:flex;align-items:center;gap:8px;padding:7px 0;
+    border-top:1px solid #FFE2D8;}
+  .ama-sol-fila:first-of-type{border-top:none;}
+  .ama-sol-fila .n{flex:1 1 auto;min-width:0;font-size:13px;font-weight:700;color:var(--dark);}
+  .ama-sol-fila .n small{display:block;font-weight:500;color:var(--gris);font-size:11px;}
+  .ama-sol-fila button{flex:0 0 auto;padding:7px 11px;border-radius:8px;
+    font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;}
+  .ama-sol-fila .si{background:var(--verde,#05653A);border-color:var(--verde,#05653A);color:#fff;}
+  .ama-sol-fila .no{background:#fff;border-color:var(--line);color:var(--gris);}
+
   /* ── Anotado en el teléfono, todavía sin cargar al servidor ── */
   .eq-card.listo{border-color:var(--dark);box-shadow:0 0 0 2px rgba(20,20,19,.07);}
   .lote-listo{display:flex;align-items:center;justify-content:space-between;gap:8px;
@@ -445,6 +480,7 @@
 
     <div class="herr">
       <div class="herr-tit">Herramientas de supervisor</div>
+      <div id="ama-solicitudes"></div>
       <div class="herr-fila">
         <input id="sup-buscar" class="nov-input" style="margin:0" type="text"
                placeholder="Nombre, DNI o correo" onkeydown="if(event.key==='Enter')buscarColab()">
@@ -474,6 +510,22 @@
     <div class="opcion-item"><span>DNI</span><span class="val" id="op-dni">--</span></div>
     <div class="opcion-item"><span>Tipo de personal</span><span class="val" id="op-tipo">--</span></div>
     <div class="opcion-item" id="op-sync"><span>Marcas pendientes</span><span class="val" id="op-pend">0</span></div>
+
+    <!-- AMANECIDA: para quien cierra su turno al día siguiente -->
+    <div class="ama-caja">
+      <div class="ama-fila">
+        <div class="ama-txt">
+          <b>Trabajo en amanecida</b>
+          <span>Mi turno termina al día siguiente</span>
+        </div>
+        <label class="ama-sw">
+          <input type="checkbox" id="ama-check" onchange="pedirAmanecida(this.checked)">
+          <span class="ama-slider"></span>
+        </label>
+      </div>
+      <div class="ama-estado" id="ama-estado"></div>
+    </div>
+
     <button class="btn btn-secundario" onclick="sincronizarAhora()">Sincronizar ahora</button>
     <button class="btn btn-secundario" onclick="cerrarSesion()">Cerrar sesión</button>
     <button class="btn btn-secundario" onclick="forzarActualizacion()">Buscar actualización</button>
@@ -639,7 +691,7 @@ function cambiarTab(t){
   if(t==='historial')renderHistorial();
   if(t==='opciones')renderOpciones();
   if(t==='horario')cargarMiHorario();
-  if(t==='equipo')cargarEquipo();
+  if(t==='equipo'){ cargarEquipo(); cargarSolicitudesAmanecida(); }
   // La barra de carga solo tiene sentido dentro de Equipo
   if(typeof renderBarraLote === 'function') renderBarraLote();
 }
@@ -747,6 +799,8 @@ async function cargarEstadoHoy(){
       if(res.gmail) sesion.gmail = res.gmail;
       if(res.supervisores) sesion.supervisores = res.supervisores;
       sesion.esSupervisor = !!res.esSupervisor;
+      if(res.amanecida !== undefined){ amaEstado = res.amanecida || ''; pintarAmanecida(); }
+      if(res.esSupervisor) cargarSolicitudesAmanecida();
       sesion.jornadaNocturna = !!res.jornadaNocturna;
       sesion.fechaJornada = res.fechaJornada || '';
       // Si el servidor detecta una jornada abierta de otro dia y el telefono
@@ -1340,6 +1394,7 @@ function renderOpciones(){
   if(opTipo) opTipo.textContent=sesion&&sesion.tipoPersonal?sesion.tipoPersonal:'—';
   var opV=document.getElementById('op-version');
   if(opV) opV.textContent=APP_VERSION;
+  pintarAmanecida();
   mostrarVersionServidor();
   const img=document.getElementById('ref-foto');
   const btnFoto=document.getElementById('btn-actualizar-foto');
@@ -1364,7 +1419,7 @@ function actualizarFotoReferencia(){
 
 /* Sello de versión. Si la app y el servidor no coinciden, el teléfono tiene
    guardada una copia vieja y hay que forzar la recarga. */
-const APP_VERSION = '2026-11-08-d';
+const APP_VERSION = '2026-11-09-a';
 
 /* Pregunta al Apps Script qué versión tiene, y avisa si no coinciden. */
 async function mostrarVersionServidor(){
@@ -1699,6 +1754,89 @@ async function buscarColab(){
     cont.innerHTML='';
     msg.textContent='Sin conexión.'; msg.className='msg error';
   }
+}
+
+/* ── Amanecida ───────────────────────────────────────────────────────
+   Quien cierra su turno al día siguiente. Sin esto, al pasar la
+   medianoche la app le reinicia las marcaciones y su jornada queda
+   partida en dos días. Lo pide el colaborador, lo aprueba un supervisor. */
+let amaEstado = '';     // '' | 'NO' | 'SOLICITADA' | 'SI'
+
+function pintarAmanecida(){
+  const chk = document.getElementById('ama-check');
+  const est = document.getElementById('ama-estado');
+  if(!chk || !est) return;
+
+  chk.checked  = (amaEstado === 'SI' || amaEstado === 'SOLICITADA');
+  chk.disabled = false;
+  est.className = 'ama-estado';
+
+  if(amaEstado === 'SI'){
+    est.className = 'ama-estado activa';
+    est.innerHTML = '✓ <b>Aprobada.</b> Cuando entres de noche, tus cuatro marcas ' +
+                    'quedan en la misma jornada aunque cambie el día.';
+  }else if(amaEstado === 'SOLICITADA'){
+    est.className = 'ama-estado pendiente';
+    est.innerHTML = '⏳ <b>Esperando aprobación</b> de un supervisor. ' +
+                    'Mientras tanto marcas normal.';
+  }else{
+    est.textContent = 'Actívalo solo si tu turno cruza la medianoche. ' +
+                      'Un supervisor tiene que aprobarlo.';
+  }
+}
+
+async function pedirAmanecida(quiere){
+  const chk = document.getElementById('ama-check');
+  const est = document.getElementById('ama-estado');
+  chk.disabled = true;
+  est.className = 'ama-estado';
+  est.textContent = quiere ? 'Enviando solicitud…' : 'Quitando…';
+  try{
+    const res = await api({ accion:'amanecida_pedir', id:sesion.id, quiere:quiere });
+    if(!res.ok){
+      est.textContent = res.error || 'No se pudo.';
+      chk.checked = (amaEstado === 'SI' || amaEstado === 'SOLICITADA');
+      chk.disabled = false;
+      return;
+    }
+    amaEstado = res.estado;
+    pintarAmanecida();
+    mostrarToast(res.mensaje, 'exito');
+  }catch(e){
+    est.textContent = 'Sin conexión. Intenta de nuevo.';
+    chk.checked = (amaEstado === 'SI' || amaEstado === 'SOLICITADA');
+    chk.disabled = false;
+  }
+}
+
+/* Lo que el supervisor tiene por aprobar, arriba de sus herramientas */
+async function cargarSolicitudesAmanecida(){
+  const cont = document.getElementById('ama-solicitudes');
+  if(!cont || !sesion || !sesion.esSupervisor) return;
+  try{
+    const res = await api({ accion:'amanecida_lista', id:sesion.id, gmail:sesion.gmail });
+    if(!res.ok || !res.pendientes || !res.pendientes.length){ cont.innerHTML=''; return; }
+    cont.innerHTML = '<div class="ama-sol">' +
+      '<h4>Amanecida por aprobar (' + res.pendientes.length + ')</h4>' +
+      res.pendientes.map(p =>
+        '<div class="ama-sol-fila">' +
+          '<div class="n">' + esc(p.nombre) + '<small>' + esc(p.tipo||'') +
+            ' · DNI ' + esc(p.dni) + '</small></div>' +
+          '<button class="si" onclick="resolverAmanecida(&quot;'+esc(p.id)+'&quot;,true)">Aprobar</button>' +
+          '<button class="no" onclick="resolverAmanecida(&quot;'+esc(p.id)+'&quot;,false)">Rechazar</button>' +
+        '</div>').join('') +
+    '</div>';
+  }catch(e){ cont.innerHTML=''; }
+}
+
+async function resolverAmanecida(idObjetivo, aprueba){
+  try{
+    const res = await api({ accion:'amanecida_resolver', id:sesion.id, gmail:sesion.gmail,
+                            idObjetivo:idObjetivo, aprueba:aprueba });
+    if(!res.ok){ mostrarToast(res.error||'No se pudo', 'error'); return; }
+    mostrarToast('✓ ' + res.mensaje, 'exito');
+    cargarSolicitudesAmanecida();
+  }catch(e){ mostrarToast('Sin conexión', 'error'); }
 }
 
 /* ── Programar el horario de una persona desde la app ────────────────
